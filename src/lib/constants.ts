@@ -1,71 +1,77 @@
 import { CategoryType, CategoryInfo } from './types'
+import { Language } from './i18n'
 
-export const CATEGORIES: Record<CategoryType, CategoryInfo> = {
-  shopping: {
-    name: 'Shopping',
-    icon: 'ShoppingCart',
-    color: 'oklch(0.65 0.15 300)',
-  },
-  home: {
-    name: 'Home',
-    icon: 'House',
-    color: 'oklch(0.60 0.15 40)',
-  },
-  transport: {
-    name: 'Transport',
-    icon: 'Car',
-    color: 'oklch(0.55 0.15 220)',
-  },
-  food: {
-    name: 'Food & Dining',
-    icon: 'Coffee',
-    color: 'oklch(0.65 0.15 60)',
-  },
-  health: {
-    name: 'Health',
-    icon: 'HeartPulse',
-    color: 'oklch(0.60 0.15 10)',
-  },
-  work: {
-    name: 'Work',
-    icon: 'Briefcase',
-    color: 'oklch(0.50 0.15 250)',
-  },
-  education: {
-    name: 'Education',
-    icon: 'GraduationCap',
-    color: 'oklch(0.55 0.15 280)',
-  },
-  entertainment: {
-    name: 'Entertainment',
-    icon: 'Gamepad',
-    color: 'oklch(0.65 0.15 340)',
-  },
-  other: {
-    name: 'Other',
-    icon: 'Receipt',
-    color: 'oklch(0.60 0.05 250)',
-  },
+export const getCategoryInfo = (category: CategoryType, categoryName: string): CategoryInfo => {
+  const categoryData: Record<CategoryType, Omit<CategoryInfo, 'name'>> = {
+    shopping: {
+      icon: 'ShoppingCart',
+      color: 'oklch(0.65 0.15 300)',
+    },
+    home: {
+      icon: 'House',
+      color: 'oklch(0.60 0.15 40)',
+    },
+    transport: {
+      icon: 'Car',
+      color: 'oklch(0.55 0.15 220)',
+    },
+    food: {
+      icon: 'Coffee',
+      color: 'oklch(0.65 0.15 60)',
+    },
+    health: {
+      icon: 'HeartPulse',
+      color: 'oklch(0.60 0.15 10)',
+    },
+    work: {
+      icon: 'Briefcase',
+      color: 'oklch(0.50 0.15 250)',
+    },
+    education: {
+      icon: 'GraduationCap',
+      color: 'oklch(0.55 0.15 280)',
+    },
+    entertainment: {
+      icon: 'Gamepad',
+      color: 'oklch(0.65 0.15 340)',
+    },
+    other: {
+      icon: 'Receipt',
+      color: 'oklch(0.60 0.05 250)',
+    },
+  }
+  
+  return {
+    ...categoryData[category],
+    name: categoryName,
+  }
 }
 
-export const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('en-US', {
+export const formatCurrency = (amount: number, language: Language): string => {
+  const locale = language === 'pt-BR' ? 'pt-BR' : 'en-US'
+  const currency = language === 'pt-BR' ? 'BRL' : 'USD'
+  
+  return new Intl.NumberFormat(locale, {
     style: 'currency',
-    currency: 'USD',
+    currency,
     minimumFractionDigits: 2,
   }).format(amount)
 }
 
-export const formatDate = (date: string): string => {
-  return new Date(date).toLocaleDateString('en-US', {
+export const formatDate = (date: string, language: Language): string => {
+  const locale = language === 'pt-BR' ? 'pt-BR' : 'en-US'
+  
+  return new Date(date).toLocaleDateString(locale, {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
   })
 }
 
-export const formatMonthYear = (date: Date): string => {
-  return new Intl.DateTimeFormat('en-US', {
+export const formatMonthYear = (date: Date, language: Language): string => {
+  const locale = language === 'pt-BR' ? 'pt-BR' : 'en-US'
+  
+  return new Intl.DateTimeFormat(locale, {
     month: 'long',
     year: 'numeric',
   }).format(date)

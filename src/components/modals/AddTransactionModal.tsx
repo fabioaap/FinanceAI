@@ -18,8 +18,9 @@ import {
 } from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { TransactionType, CategoryType } from '@/lib/types'
-import { CATEGORIES, generateId } from '@/lib/constants'
+import { generateId } from '@/lib/constants'
 import { toast } from 'sonner'
+import { Language, Translations } from '@/lib/i18n'
 
 interface AddTransactionModalProps {
   open: boolean
@@ -33,34 +34,41 @@ interface AddTransactionModalProps {
     date: string
     createdAt: string
   }) => void
+  language: Language
+  translations: Translations
 }
 
-export function AddTransactionModal({ open, onClose, onAdd }: AddTransactionModalProps) {
+export function AddTransactionModal({ open, onClose, onAdd, language, translations }: AddTransactionModalProps) {
   const [type, setType] = useState<TransactionType>('expense')
   const [amount, setAmount] = useState('')
   const [description, setDescription] = useState('')
   const [category, setCategory] = useState<CategoryType>('other')
+
+  const categories: CategoryType[] = ['shopping', 'home', 'transport', 'food', 'health', 'work', 'education', 'entertainment', 'other']
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
     const amountNum = parseFloat(amount)
     if (isNaN(amountNum) || amountNum <= 0) {
-      toast.error('Please enter a valid amount')
+      toast.error(language === 'pt-BR' ? 'Por favor, insira um valor válido' : 'Please enter a valid amount')
       return
     }
 
     onAdd({
       id: generateId(),
       amount: amountNum,
-      description: description || 'Untitled transaction',
+      description: description || (language === 'pt-BR' ? 'Transação sem título' : 'Untitled transaction'),
       category,
       type,
       date: new Date().toISOString(),
       createdAt: new Date().toISOString(),
     })
 
-    toast.success(`${type === 'income' ? 'Income' : 'Expense'} added successfully`)
+    const successMessage = language === 'pt-BR'
+      ? `${type === 'income' ? 'Receita' : 'Despesa'} adicionada com sucesso`
+      : `${type === 'income' ? 'Income' : 'Expense'} added successfully`
+    toast.success(successMessage)
     
     setAmount('')
     setDescription('')
@@ -72,22 +80,25 @@ export function AddTransactionModal({ open, onClose, onAdd }: AddTransactionModa
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Add Transaction</DialogTitle>
+          <DialogTitle>{translations.transactions.addTransaction}</DialogTitle>
           <DialogDescription>
-            Record a new income or expense transaction
+            {language === 'pt-BR' 
+              ? 'Registre uma nova receita ou despesa' 
+              : 'Record a new income or expense transaction'
+            }
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <Tabs value={type} onValueChange={(v) => setType(v as TransactionType)}>
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="expense">Expense</TabsTrigger>
-              <TabsTrigger value="income">Income</TabsTrigger>
+              <TabsTrigger value="expense">{translations.transactions.expense}</TabsTrigger>
+              <TabsTrigger value="income">{translations.transactions.income}</TabsTrigger>
             </TabsList>
           </Tabs>
 
           <div className="space-y-2">
-            <Label htmlFor="amount">Amount</Label>
+            <Label htmlFor="amount">{translations.transactions.amount}</Label>
             <Input
               id="amount"
               type="number"
@@ -101,25 +112,25 @@ export function AddTransactionModal({ open, onClose, onAdd }: AddTransactionModa
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">{translations.transactions.description}</Label>
             <Input
               id="description"
-              placeholder="What was this for?"
+              placeholder={language === 'pt-BR' ? 'Para que foi isso?' : 'What was this for?'}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="category">Category</Label>
+            <Label htmlFor="category">{translations.transactions.category}</Label>
             <Select value={category} onValueChange={(v) => setCategory(v as CategoryType)}>
               <SelectTrigger id="category">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(CATEGORIES).map(([key, info]) => (
-                  <SelectItem key={key} value={key}>
-                    {info.name}
+                {categories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {translations.categories[cat]}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -128,9 +139,9 @@ export function AddTransactionModal({ open, onClose, onAdd }: AddTransactionModa
 
           <div className="flex gap-3 justify-end">
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              {translations.modals.cancel}
             </Button>
-            <Button type="submit">Add Transaction</Button>
+            <Button type="submit">{translations.modals.add}</Button>
           </div>
         </form>
       </DialogContent>

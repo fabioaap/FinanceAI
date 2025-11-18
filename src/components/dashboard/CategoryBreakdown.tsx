@@ -1,13 +1,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Transaction, CategoryType } from '@/lib/types'
-import { CATEGORIES, formatCurrency } from '@/lib/constants'
+import { getCategoryInfo, formatCurrency } from '@/lib/constants'
 import { ChartPie } from '@phosphor-icons/react'
+import { Language, Translations } from '@/lib/i18n'
 
 interface CategoryBreakdownProps {
   transactions: Transaction[]
+  language: Language
+  translations: Translations
 }
 
-export function CategoryBreakdown({ transactions }: CategoryBreakdownProps) {
+export function CategoryBreakdown({ transactions, language, translations }: CategoryBreakdownProps) {
   const categoryTotals = transactions
     .filter((t) => t.type === 'expense')
     .reduce((acc, transaction) => {
@@ -27,13 +30,12 @@ export function CategoryBreakdown({ transactions }: CategoryBreakdownProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <ChartPie size={20} weight="bold" />
-            Spending by Category
+            {translations.categoryBreakdown.title}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8 text-muted-foreground">
-            <p>No expenses yet this month</p>
-            <p className="text-sm mt-2">Add your first expense to see insights</p>
+            <p>{translations.categoryBreakdown.noExpenses}</p>
           </div>
         </CardContent>
       </Card>
@@ -45,12 +47,15 @@ export function CategoryBreakdown({ transactions }: CategoryBreakdownProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <ChartPie size={20} weight="bold" />
-          Spending by Category
+          {translations.categoryBreakdown.title}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {sortedCategories.map(([category, amount]) => {
-          const categoryInfo = CATEGORIES[category as CategoryType]
+          const categoryInfo = getCategoryInfo(
+            category as CategoryType,
+            translations.categories[category as CategoryType]
+          )
           const percentage = (amount / totalExpenses) * 100
 
           return (
@@ -58,7 +63,7 @@ export function CategoryBreakdown({ transactions }: CategoryBreakdownProps) {
               <div className="flex items-center justify-between text-sm">
                 <span className="font-medium">{categoryInfo.name}</span>
                 <span className="font-mono text-muted-foreground">
-                  {formatCurrency(amount)}
+                  {formatCurrency(amount, language)}
                 </span>
               </div>
               <div className="h-2 bg-muted rounded-full overflow-hidden">
@@ -71,7 +76,7 @@ export function CategoryBreakdown({ transactions }: CategoryBreakdownProps) {
                 />
               </div>
               <div className="text-xs text-muted-foreground">
-                {percentage.toFixed(1)}% of total expenses
+                {percentage.toFixed(1)}% {language === 'pt-BR' ? 'do total de despesas' : 'of total expenses'}
               </div>
             </div>
           )

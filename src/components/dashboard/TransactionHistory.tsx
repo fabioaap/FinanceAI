@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
-import { Transaction } from '@/lib/types'
-import { CATEGORIES, formatCurrency, formatDate } from '@/lib/constants'
+import { Transaction, CategoryType } from '@/lib/types'
+import { getCategoryInfo, formatCurrency, formatDate } from '@/lib/constants'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -9,16 +9,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { MagnifyingGlass, ArrowUp, ArrowDown, Trash } from '@phosphor-icons/react'
 import * as Icons from '@phosphor-icons/react'
+import { Language, Translations } from '@/lib/i18n'
 
 interface TransactionHistoryProps {
   transactions: Transaction[]
   onDeleteTransaction?: (id: string) => void
+  language: Language
+  translations: Translations
 }
 
 type SortOption = 'date-desc' | 'date-asc' | 'amount-desc' | 'amount-asc'
 type FilterType = 'all' | 'income' | 'expense'
 
-export function TransactionHistory({ transactions, onDeleteTransaction }: TransactionHistoryProps) {
+export function TransactionHistory({ transactions, onDeleteTransaction, language, translations }: TransactionHistoryProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState<FilterType>('all')
   const [sortBy, setSortBy] = useState<SortOption>('date-desc')
@@ -68,17 +71,20 @@ export function TransactionHistory({ transactions, onDeleteTransaction }: Transa
     .reduce((sum, t) => sum + t.amount, 0)
 
   const getCategoryIcon = (category: string) => {
-    const iconName = CATEGORIES[category as keyof typeof CATEGORIES]?.icon || 'Receipt'
+    const categoryInfo = getCategoryInfo(category as CategoryType, translations.categories[category as CategoryType])
+    const iconName = categoryInfo?.icon || 'Receipt'
     const IconComponent = Icons[iconName as keyof typeof Icons] as React.ComponentType<any>
     return IconComponent ? <IconComponent size={20} weight="duotone" /> : null
   }
 
+  const categories: CategoryType[] = ['shopping', 'home', 'transport', 'food', 'health', 'work', 'education', 'entertainment', 'other']
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Transaction History</CardTitle>
+        <CardTitle>{translations.transactions.title}</CardTitle>
         <CardDescription>
-          View and manage all your transactions
+          {language === 'pt-BR' ? 'Visualize e gerencie todas as suas transações' : 'View and manage all your transactions'}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -86,9 +92,9 @@ export function TransactionHistory({ transactions, onDeleteTransaction }: Transa
           <Card>
             <CardContent className="pt-6">
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Total Income</p>
+                <p className="text-sm text-muted-foreground">{language === 'pt-BR' ? 'Total de Receitas' : 'Total Income'}</p>
                 <p className="text-2xl font-bold text-secondary">
-                  {formatCurrency(totalIncome)}
+                  {formatCurrency(totalIncome, language)}
                 </p>
               </div>
             </CardContent>
@@ -96,9 +102,9 @@ export function TransactionHistory({ transactions, onDeleteTransaction }: Transa
           <Card>
             <CardContent className="pt-6">
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Total Expenses</p>
+                <p className="text-sm text-muted-foreground">{language === 'pt-BR' ? 'Total de Despesas' : 'Total Expenses'}</p>
                 <p className="text-2xl font-bold text-destructive">
-                  {formatCurrency(totalExpense)}
+                  {formatCurrency(totalExpense, language)}
                 </p>
               </div>
             </CardContent>
@@ -106,9 +112,9 @@ export function TransactionHistory({ transactions, onDeleteTransaction }: Transa
           <Card>
             <CardContent className="pt-6">
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Net Balance</p>
+                <p className="text-sm text-muted-foreground">{language === 'pt-BR' ? 'Saldo Líquido' : 'Net Balance'}</p>
                 <p className={`text-2xl font-bold ${totalIncome - totalExpense >= 0 ? 'text-secondary' : 'text-destructive'}`}>
-                  {formatCurrency(totalIncome - totalExpense)}
+                  {formatCurrency(totalIncome - totalExpense, language)}
                 </p>
               </div>
             </CardContent>
@@ -122,7 +128,7 @@ export function TransactionHistory({ transactions, onDeleteTransaction }: Transa
               size={20}
             />
             <Input
-              placeholder="Search transactions..."
+              placeholder={language === 'pt-BR' ? 'Buscar transações...' : 'Search transactions...'}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -132,21 +138,21 @@ export function TransactionHistory({ transactions, onDeleteTransaction }: Transa
           <div className="flex flex-col sm:flex-row gap-3">
             <Tabs value={filterType} onValueChange={(v) => setFilterType(v as FilterType)} className="w-full sm:w-auto">
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="income">Income</TabsTrigger>
-                <TabsTrigger value="expense">Expense</TabsTrigger>
+                <TabsTrigger value="all">{language === 'pt-BR' ? 'Todos' : 'All'}</TabsTrigger>
+                <TabsTrigger value="income">{translations.transactions.income}</TabsTrigger>
+                <TabsTrigger value="expense">{translations.transactions.expense}</TabsTrigger>
               </TabsList>
             </Tabs>
 
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
               <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Category" />
+                <SelectValue placeholder={translations.transactions.category} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {Object.entries(CATEGORIES).map(([key, info]) => (
-                  <SelectItem key={key} value={key}>
-                    {info.name}
+                <SelectItem value="all">{language === 'pt-BR' ? 'Todas as Categorias' : 'All Categories'}</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {translations.categories[cat]}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -154,13 +160,13 @@ export function TransactionHistory({ transactions, onDeleteTransaction }: Transa
 
             <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
               <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Sort by" />
+                <SelectValue placeholder={language === 'pt-BR' ? 'Ordenar por' : 'Sort by'} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="date-desc">Newest First</SelectItem>
-                <SelectItem value="date-asc">Oldest First</SelectItem>
-                <SelectItem value="amount-desc">Highest Amount</SelectItem>
-                <SelectItem value="amount-asc">Lowest Amount</SelectItem>
+                <SelectItem value="date-desc">{language === 'pt-BR' ? 'Mais Recentes' : 'Newest First'}</SelectItem>
+                <SelectItem value="date-asc">{language === 'pt-BR' ? 'Mais Antigas' : 'Oldest First'}</SelectItem>
+                <SelectItem value="amount-desc">{language === 'pt-BR' ? 'Maior Valor' : 'Highest Amount'}</SelectItem>
+                <SelectItem value="amount-asc">{language === 'pt-BR' ? 'Menor Valor' : 'Lowest Amount'}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -169,10 +175,12 @@ export function TransactionHistory({ transactions, onDeleteTransaction }: Transa
         <div className="space-y-2">
           {filteredAndSortedTransactions.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
-              <p>No transactions found</p>
+              <p>{translations.transactions.noTransactions}</p>
             </div>
           ) : (
-            filteredAndSortedTransactions.map((transaction) => (
+            filteredAndSortedTransactions.map((transaction) => {
+              const categoryInfo = getCategoryInfo(transaction.category, translations.categories[transaction.category])
+              return (
               <div
                 key={transaction.id}
                 className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
@@ -180,9 +188,9 @@ export function TransactionHistory({ transactions, onDeleteTransaction }: Transa
                 <div className="flex items-center gap-4 flex-1">
                   <div 
                     className="p-2 rounded-lg"
-                    style={{ backgroundColor: `${CATEGORIES[transaction.category]?.color}20` }}
+                    style={{ backgroundColor: `${categoryInfo?.color}20` }}
                   >
-                    <div style={{ color: CATEGORIES[transaction.category]?.color }}>
+                    <div style={{ color: categoryInfo?.color }}>
                       {getCategoryIcon(transaction.category)}
                     </div>
                   </div>
@@ -191,11 +199,11 @@ export function TransactionHistory({ transactions, onDeleteTransaction }: Transa
                     <div className="flex items-center gap-2">
                       <p className="font-medium truncate">{transaction.description}</p>
                       <Badge variant="outline" className="text-xs">
-                        {CATEGORIES[transaction.category]?.name}
+                        {categoryInfo?.name}
                       </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      {formatDate(transaction.date)}
+                      {formatDate(transaction.date, language)}
                     </p>
                   </div>
                 </div>
@@ -213,7 +221,7 @@ export function TransactionHistory({ transactions, onDeleteTransaction }: Transa
                           transaction.type === 'income' ? 'text-secondary' : 'text-destructive'
                         }`}
                       >
-                        {formatCurrency(transaction.amount)}
+                        {formatCurrency(transaction.amount, language)}
                       </span>
                     </div>
                   </div>
@@ -230,13 +238,16 @@ export function TransactionHistory({ transactions, onDeleteTransaction }: Transa
                   )}
                 </div>
               </div>
-            ))
+            )})
           )}
         </div>
 
         {filteredAndSortedTransactions.length > 0 && (
           <div className="pt-4 border-t text-center text-sm text-muted-foreground">
-            Showing {filteredAndSortedTransactions.length} of {transactions.length} transactions
+            {language === 'pt-BR' 
+              ? `Mostrando ${filteredAndSortedTransactions.length} de ${transactions.length} transações`
+              : `Showing ${filteredAndSortedTransactions.length} of ${transactions.length} transactions`
+            }
           </div>
         )}
       </CardContent>

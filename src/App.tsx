@@ -10,15 +10,20 @@ import { TransactionHistory } from '@/components/dashboard/TransactionHistory'
 import { AddTransactionModal } from '@/components/modals/AddTransactionModal'
 import { AddBillModal } from '@/components/modals/AddBillModal'
 import { AddGoalModal } from '@/components/modals/AddGoalModal'
+import { SettingsModal } from '@/components/modals/SettingsModal'
 import { Button } from '@/components/ui/button'
-import { Plus, CaretLeft, CaretRight, ClockCounterClockwise, House } from '@phosphor-icons/react'
+import { Plus, CaretLeft, CaretRight, ClockCounterClockwise, House, Gear } from '@phosphor-icons/react'
 import { formatMonthYear, getMonthKey } from '@/lib/constants'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
+import { Language, getTranslation } from '@/lib/i18n'
 
 function App() {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const monthKey = getMonthKey(currentMonth)
+
+  const [language, setLanguage] = useKV<Language>('app-language', 'en')
+  const t = getTranslation(language || 'en')
 
   const [transactions, setTransactions] = useKV<Transaction[]>(`transactions-${monthKey}`, [])
   const [bills, setBills] = useKV<Bill[]>('bills', [])
@@ -28,6 +33,7 @@ function App() {
   const [showAddBill, setShowAddBill] = useState(false)
   const [showAddGoal, setShowAddGoal] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
 
   const income = (transactions || [])
     .filter((t) => t.type === 'income')
@@ -81,7 +87,16 @@ function App() {
     setTransactions((current) =>
       (current || []).filter((t) => t.id !== transactionId)
     )
-    toast.success('Transaction deleted')
+    toast.success(t.transactions.deleted)
+  }
+
+  const handleLanguageChange = (newLanguage: Language) => {
+    setLanguage(newLanguage)
+    toast.success(
+      newLanguage === 'pt-BR' 
+        ? 'Idioma alterado para Português (Brasil)' 
+        : 'Language changed to English'
+    )
   }
 
   return (
@@ -89,33 +104,45 @@ function App() {
       <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8 space-y-6">
         <header className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">FinanceAI</h1>
-            <p className="text-muted-foreground">Personal Finance Dashboard</p>
+            <h1 className="text-3xl font-bold tracking-tight">{t.app.title}</h1>
+            <p className="text-muted-foreground">{t.app.subtitle}</p>
           </div>
           
-          <Button
-            variant={showHistory ? "default" : "outline"}
-            onClick={() => setShowHistory(!showHistory)}
-            className="gap-2"
-          >
-            {showHistory ? (
-              <>
-                <House size={20} weight="bold" />
-                Dashboard
-              </>
-            ) : (
-              <>
-                <ClockCounterClockwise size={20} weight="bold" />
-                History
-              </>
-            )}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setShowSettings(true)}
+            >
+              <Gear size={20} weight="bold" />
+            </Button>
+            
+            <Button
+              variant={showHistory ? "default" : "outline"}
+              onClick={() => setShowHistory(!showHistory)}
+              className="gap-2"
+            >
+              {showHistory ? (
+                <>
+                  <House size={20} weight="bold" />
+                  {t.navigation.dashboard}
+                </>
+              ) : (
+                <>
+                  <ClockCounterClockwise size={20} weight="bold" />
+                  {t.navigation.history}
+                </>
+              )}
+            </Button>
+          </div>
         </header>
 
         {showHistory ? (
           <TransactionHistory 
             transactions={transactions || []} 
             onDeleteTransaction={handleDeleteTransaction}
+            language={language || 'en'}
+            translations={t}
           />
         ) : (
           <>
@@ -128,7 +155,7 @@ function App() {
                 <CaretLeft size={20} weight="bold" />
               </Button>
               <h2 className="text-2xl font-semibold">
-                {formatMonthYear(currentMonth)}
+                {formatMonthYear(currentMonth, language || 'en')}
               </h2>
               <Button
                 variant="ghost"
@@ -139,11 +166,26 @@ function App() {
               </Button>
             </div>
 
-            <SummaryCards income={income} expenses={expenses} balance={balance} />
+            <SummaryCards 
+              income={income} 
+              expenses={expenses} 
+              balance={balance}
+              language={language || 'en'}
+              translations={t}
+            />
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <CategoryBreakdown transactions={transactions || []} />
-              <AIInsights transactions={transactions || []} currentMonth={currentMonth} />
+              <CategoryBreakdown 
+                transactions={transactions || []}
+                language={language || 'en'}
+                translations={t}
+              />
+              <AIInsights 
+                transactions={transactions || []} 
+                currentMonth={currentMonth}
+                language={language || 'en'}
+                translations={t}
+              />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -151,10 +193,14 @@ function App() {
                 bills={bills || []}
                 onAddBill={() => setShowAddBill(true)}
                 onTogglePaid={handleToggleBillPaid}
+                language={language || 'en'}
+                translations={t}
               />
               <SavingsGoals
                 goals={goals || []}
                 onAddGoal={() => setShowAddGoal(true)}
+                language={language || 'en'}
+                translations={t}
               />
             </div>
           </>
@@ -173,18 +219,32 @@ function App() {
         open={showAddTransaction}
         onClose={() => setShowAddTransaction(false)}
         onAdd={handleAddTransaction}
+        language={language || 'en'}
+        translations={t}
       />
 
       <AddBillModal
         open={showAddBill}
         onClose={() => setShowAddBill(false)}
         onAdd={handleAddBill}
+        language={language || 'en'}
+        translations={t}
       />
 
       <AddGoalModal
         open={showAddGoal}
         onClose={() => setShowAddGoal(false)}
         onAdd={handleAddGoal}
+        language={language || 'en'}
+        translations={t}
+      />
+
+      <SettingsModal
+        open={showSettings}
+        onClose={() => setShowSettings(false)}
+        language={language || 'en'}
+        onLanguageChange={handleLanguageChange}
+        translations={t}
       />
 
       <Toaster />

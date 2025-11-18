@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/select'
 import { generateId } from '@/lib/constants'
 import { toast } from 'sonner'
+import { Language, Translations } from '@/lib/i18n'
 
 interface AddBillModalProps {
   open: boolean
@@ -31,9 +32,11 @@ interface AddBillModalProps {
     recurrence?: 'once' | 'weekly' | 'monthly' | 'yearly'
     createdAt: string
   }) => void
+  language: Language
+  translations: Translations
 }
 
-export function AddBillModal({ open, onClose, onAdd }: AddBillModalProps) {
+export function AddBillModal({ open, onClose, onAdd, language, translations }: AddBillModalProps) {
   const [description, setDescription] = useState('')
   const [amount, setAmount] = useState('')
   const [dueDate, setDueDate] = useState('')
@@ -44,17 +47,17 @@ export function AddBillModal({ open, onClose, onAdd }: AddBillModalProps) {
 
     const amountNum = parseFloat(amount)
     if (isNaN(amountNum) || amountNum <= 0) {
-      toast.error('Please enter a valid amount')
+      toast.error(language === 'pt-BR' ? 'Por favor, insira um valor válido' : 'Please enter a valid amount')
       return
     }
 
     if (!dueDate) {
-      toast.error('Please select a due date')
+      toast.error(language === 'pt-BR' ? 'Por favor, selecione uma data de vencimento' : 'Please select a due date')
       return
     }
 
     if (!description.trim()) {
-      toast.error('Please enter a description')
+      toast.error(language === 'pt-BR' ? 'Por favor, insira uma descrição' : 'Please enter a description')
       return
     }
 
@@ -75,7 +78,7 @@ export function AddBillModal({ open, onClose, onAdd }: AddBillModalProps) {
       createdAt: new Date().toISOString(),
     })
 
-    toast.success('Bill reminder added successfully')
+    toast.success(language === 'pt-BR' ? 'Lembrete de conta adicionado com sucesso' : 'Bill reminder added successfully')
     
     setDescription('')
     setAmount('')
@@ -88,18 +91,21 @@ export function AddBillModal({ open, onClose, onAdd }: AddBillModalProps) {
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Add Bill Reminder</DialogTitle>
+          <DialogTitle>{translations.bills.addBill}</DialogTitle>
           <DialogDescription>
-            Set up a reminder for an upcoming bill or payment
+            {language === 'pt-BR'
+              ? 'Configure um lembrete para uma conta ou pagamento futuro'
+              : 'Set up a reminder for an upcoming bill or payment'
+            }
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="bill-description">Description</Label>
+            <Label htmlFor="bill-description">{translations.transactions.description}</Label>
             <Input
               id="bill-description"
-              placeholder="e.g., Electric bill, Rent, Insurance"
+              placeholder={language === 'pt-BR' ? 'ex: Conta de luz, Aluguel, Seguro' : 'e.g., Electric bill, Rent, Insurance'}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               autoFocus
@@ -107,7 +113,7 @@ export function AddBillModal({ open, onClose, onAdd }: AddBillModalProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="bill-amount">Amount</Label>
+            <Label htmlFor="bill-amount">{translations.transactions.amount}</Label>
             <Input
               id="bill-amount"
               type="number"
@@ -120,7 +126,7 @@ export function AddBillModal({ open, onClose, onAdd }: AddBillModalProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="bill-due-date">Due Date</Label>
+            <Label htmlFor="bill-due-date">{translations.bills.dueDate}</Label>
             <Input
               id="bill-due-date"
               type="date"
@@ -130,25 +136,25 @@ export function AddBillModal({ open, onClose, onAdd }: AddBillModalProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="bill-recurrence">Recurrence</Label>
+            <Label htmlFor="bill-recurrence">{language === 'pt-BR' ? 'Recorrência' : 'Recurrence'}</Label>
             <Select value={recurrence} onValueChange={(v) => setRecurrence(v as any)}>
               <SelectTrigger id="bill-recurrence">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="once">One-time</SelectItem>
-                <SelectItem value="weekly">Weekly</SelectItem>
-                <SelectItem value="monthly">Monthly</SelectItem>
-                <SelectItem value="yearly">Yearly</SelectItem>
+                <SelectItem value="once">{language === 'pt-BR' ? 'Única' : 'One-time'}</SelectItem>
+                <SelectItem value="weekly">{language === 'pt-BR' ? 'Semanal' : 'Weekly'}</SelectItem>
+                <SelectItem value="monthly">{language === 'pt-BR' ? 'Mensal' : 'Monthly'}</SelectItem>
+                <SelectItem value="yearly">{language === 'pt-BR' ? 'Anual' : 'Yearly'}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="flex gap-3 justify-end">
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              {translations.modals.cancel}
             </Button>
-            <Button type="submit">Add Reminder</Button>
+            <Button type="submit">{translations.modals.add}</Button>
           </div>
         </form>
       </DialogContent>
