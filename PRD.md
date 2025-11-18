@@ -54,6 +54,13 @@ This is a feature-rich financial dashboard with persistent data, multiple views,
 - **Progression**: System analyzes transactions → Identifies patterns (spending increases, savings opportunities) → Generates insight card → User reads suggestion → Optionally acts on recommendation
 - **Success criteria**: Insights are relevant and actionable, language is clear and non-judgmental, suggestions are practical
 
+### Transaction History View
+- **Functionality**: Comprehensive view of all transactions with search, filtering, sorting, and deletion capabilities
+- **Purpose**: Enables users to review, analyze, and manage their complete transaction history across all time periods
+- **Trigger**: History button in header toggles between dashboard and history view
+- **Progression**: User clicks "History" button → Full transaction list loads → User applies filters/search → Views filtered results → Can delete individual transactions → Returns to dashboard
+- **Success criteria**: All transactions load instantly, filters work in real-time, search is responsive, sorting updates smoothly, delete action has confirmation and updates immediately
+
 ## Edge Case Handling
 
 - **Empty States**: Beautiful illustrations and clear CTAs guide users to add their first transaction, bill, or goal
@@ -114,12 +121,13 @@ Animations should feel purposeful and confident, never frivolous - like a financ
   - `Button` with distinct primary/secondary/ghost variants
   - `Input` and `Label` for forms with inline validation
   - `Select` for category and month pickers
-  - `Tabs` for switching between transaction types
+  - `Tabs` for switching between transaction types and filters
   - `Progress` bars for goal tracking
-  - `Badge` for bill status indicators
+  - `Badge` for bill status indicators and category labels
   - `Calendar` for date selection in bill reminders
   - `Separator` for visual section breaks
   - Custom `Chart` components using D3 for category visualization
+  - `Tabs` for transaction history type filtering (All/Income/Expense)
   
 - **Customizations**: 
   - Custom financial input component with currency formatting
@@ -139,12 +147,17 @@ Animations should feel purposeful and confident, never frivolous - like a financ
   - `TrendingUp/TrendingDown` for balance changes
   - `Plus` for add actions
   - `ArrowLeft/ArrowRight` for month navigation
+  - `ArrowUp/ArrowDown` for income/expense indicators
   - `ChartPie` for categories
   - `Bell` for reminders
   - `Target` for goals
   - `Sparkle` for AI insights
   - `Gear` for settings
-  - Category icons: `ShoppingCart`, `Home`, `Car`, `Coffee`, `HeartPulse`, `Briefcase`, `GraduationCap`, `Gamepad`
+  - `ClockCounterClockwise` for transaction history
+  - `House` for dashboard/home
+  - `MagnifyingGlass` for search
+  - `Trash` for delete actions
+  - Category icons: `ShoppingCart`, `Home`, `Car`, `Coffee`, `HeartPulse`, `Briefcase`, `GraduationCap`, `Gamepad`, `Receipt`
   
 - **Spacing**: 
   - Dashboard uses `gap-6` between major sections
@@ -160,3 +173,5 @@ Animations should feel purposeful and confident, never frivolous - like a financ
   - Floating action button increases to 56px diameter on mobile
   - Modal sheets slide from bottom on mobile instead of center dialog
   - Chart legends collapse to scrollable horizontal on narrow screens
+  - Transaction history filters stack vertically on mobile
+  - Search bar remains full-width across all breakpoints
