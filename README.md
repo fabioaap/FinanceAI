@@ -7,6 +7,7 @@ This template is your blank canvas. It comes with a minimal setup to help you ge
 - A clean, minimal Spark environment
 - Pre-configured for local development
 - Ready to scale with your ideas
+This template implements the UI and local persistence wiring for a FinanceAI MVP, but lacks the full sync, OAuth and import features described in the project specification. See `docs/scan_spec_report.md` for a detailed mapping.
   
 🧠 What Can You Do?
 
