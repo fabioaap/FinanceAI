@@ -152,6 +152,8 @@ Use esses arquivos para testar a funcionalidade de importação.
 - Nenhum dado é enviado para servidores externos
 - Validação de formato de arquivo antes do processamento
 
+⚠️ **Nota**: A biblioteca OFX possui dependências com vulnerabilidades conhecidas. Como o processamento é feito localmente no browser e não há exposição de dados, o risco é mitigado. Para ambientes de produção em larga escala, considere implementar um parser OFX customizado. Veja [SECURITY.md](SECURITY.md) para detalhes.
+
 ## 🤝 Contribuindo
 
 1. Faça um fork do projeto
