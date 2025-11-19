@@ -10,18 +10,23 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { MagnifyingGlass, ArrowUp, ArrowDown, Trash } from '@phosphor-icons/react'
 import * as Icons from '@phosphor-icons/react'
 import { Language, Translations } from '@/lib/i18n'
+import { useTransactions } from '@/hooks/useTransactions'
 
 interface TransactionHistoryProps {
-  transactions: Transaction[]
+  transactions?: Transaction[]
   onDeleteTransaction?: (id: string) => void
   language: Language
   translations: Translations
+  currentMonth?: Date
 }
 
 type SortOption = 'date-desc' | 'date-asc' | 'amount-desc' | 'amount-asc'
 type FilterType = 'all' | 'income' | 'expense'
 
-export function TransactionHistory({ transactions, onDeleteTransaction, language, translations }: TransactionHistoryProps) {
+export function TransactionHistory({ transactions: transactionsProp, onDeleteTransaction, language, translations, currentMonth }: TransactionHistoryProps) {
+  const { transactions: transactionsFromDB } = useTransactions(currentMonth)
+  const transactions = transactionsProp ?? transactionsFromDB
+  
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState<FilterType>('all')
   const [sortBy, setSortBy] = useState<SortOption>('date-desc')

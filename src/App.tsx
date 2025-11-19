@@ -143,6 +143,7 @@ function App() {
             onDeleteTransaction={handleDeleteTransaction}
             language={language || 'en'}
             translations={t}
+            currentMonth={currentMonth}
           />
         ) : (
           <>
