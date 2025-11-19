@@ -1,6 +1,6 @@
 export type TransactionType = 'income' | 'expense'
 
-export type CategoryType = 
+export type CategoryType =
   | 'shopping'
   | 'home'
   | 'transport'
@@ -45,4 +45,31 @@ export interface CategoryInfo {
   name: string
   icon: string
   color: string
+}
+
+// Tipos para upload de arquivos bancários
+export type BankFileFormat = 'csv' | 'ofx' | 'txt'
+
+export interface ParsedTransaction {
+  date: string
+  description: string
+  amount: number
+  type: TransactionType
+  category?: CategoryType
+  balance?: number
+}
+
+export interface BankFileParseResult {
+  success: boolean
+  transactions: ParsedTransaction[]
+  errors: string[]
+  fileName: string
+  format: BankFileFormat
+  totalParsed: number
+}
+
+export interface BankFileUploadConfig {
+  acceptedFormats: BankFileFormat[]
+  maxFileSizeMB: number
+  autoDetectFormat: boolean
 }

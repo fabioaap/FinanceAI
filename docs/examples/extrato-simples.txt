@@ -1,0 +1,13 @@
+01/11/2025 Compra Supermercado -R$ 234,50
+02/11/2025 Transporte Uber -R$ 28,90
+03/11/2025 Depósito Salário R$ 5.000,00
+05/11/2025 Assinatura Netflix -R$ 45,90
+07/11/2025 Medicamentos Farmácia -R$ 87,30
+10/11/2025 Restaurante Centro -R$ 156,00
+12/11/2025 Combustível Posto -R$ 250,00
+15/11/2025 Freelance Recebido R$ 800,00
+18/11/2025 Pagamento Aluguel -R$ 1.500,00
+20/11/2025 Lazer Cinema -R$ 68,00
+22/11/2025 Academia Mensalidade -R$ 89,90
+25/11/2025 Compras Online -R$ 345,20
+28/11/2025 Padaria Café -R$ 42,50
