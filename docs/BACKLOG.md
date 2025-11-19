@@ -108,9 +108,24 @@ Este backlog documenta o trabalho já realizado (Done), o que está em andamento
 ---
 
 ## 📈 Sugestões rápidas
-- Criar `docs/TEMPLATES/issue-backlog.md` para padronizar criação de items e critérios de aceite
+- Criar `docs/TEMPLATES/issue-backlog.md` para padronizar criação de items e critérios de aceite ✅
 - Reunir dados de arquivos reais (anonimizados) para melhorar regras de categorização
 
 ---
 
-Se estiver tudo certo, marco o item de backlog "Criar backlog em `docs`" como concluído e sigo para integrar o modal no `App.tsx` (atual item em progresso). Deseja que eu crie issues para as próximas tarefas (testes, duplicatas, QIF) também?
+## 🤖 Automação de Issues
+
+✅ **Scripts criados para automatizar criação de issues e popular GitHub Project #2:**
+- `scripts/issues.json` - Lista estruturada de todas as issues do backlog
+- `scripts/create_issues_api.ps1` - Script PowerShell que cria issues via API REST e adiciona ao Project #2
+- `scripts/README.md` - Instruções completas de uso
+
+**Para executar:**
+```pwsh
+cd C:\Users\Educacross\Documents\FinanceAI
+pwsh .\scripts\create_issues_api.ps1 -ProjectNumber 2 -Owner fabioaap -CreateLabels
+```
+
+Veja instruções completas em `scripts/README.md`
+
+---
