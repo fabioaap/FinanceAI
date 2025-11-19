@@ -3,6 +3,18 @@
   "version": "1.0.0",
   "description": "Finance AI Application",
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
