@@ -132,7 +132,15 @@ export function useTransactions(monthKey?: string) {
   const update = useCallback(async (id: string, updates: Partial<Transaction>) => {
     setLoading(true)
     try {
-      await dbUpdateTransaction(Number(id), updates)
+      // Convert app format to DB format for updates
+      const dbUpdates: any = {}
+      if (updates.amount !== undefined) dbUpdates.amount = updates.amount
+      if (updates.description) dbUpdates.description = updates.description
+      if (updates.date) dbUpdates.date = updates.date
+      if (updates.type) dbUpdates.type = updates.type
+      if (updates.category) dbUpdates.category = updates.category
+      
+      await dbUpdateTransaction(Number(id), dbUpdates)
       await load()
     } finally {
       setLoading(false)
