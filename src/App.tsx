@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { useKV } from '@github/spark/hooks'
 import { Transaction, Bill, Goal } from '@/lib/types'
+import { useTransactions, useBills, useGoals, useLanguageSetting } from '@/hooks/use-storage'
 import { SummaryCards } from '@/components/dashboard/SummaryCards'
 import { CategoryBreakdown } from '@/components/dashboard/CategoryBreakdown'
 import { UpcomingBills } from '@/components/dashboard/UpcomingBills'
@@ -22,12 +22,12 @@ function App() {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const monthKey = getMonthKey(currentMonth)
 
-  const [language, setLanguage] = useKV<Language>('app-language', 'en')
+  const { language, setLanguage: setStorageLanguage } = useLanguageSetting()
   const t = getTranslation(language || 'en')
 
-  const [transactions, setTransactions] = useKV<Transaction[]>(`transactions-${monthKey}`, [])
-  const [bills, setBills] = useKV<Bill[]>('bills', [])
-  const [goals, setGoals] = useKV<Goal[]>('goals', [])
+  const { transactions, add: addTransaction, remove: removeTransaction } = useTransactions(monthKey)
+  const { bills, add: addBill, update: updateBill } = useBills()
+  const { goals, add: addGoal } = useGoals()
 
   const [showAddTransaction, setShowAddTransaction] = useState(false)
   const [showAddBill, setShowAddBill] = useState(false)
@@ -62,36 +62,33 @@ function App() {
   }
 
   const handleAddTransaction = (transaction: Transaction) => {
-    setTransactions((current) => [...(current || []), transaction])
+    addTransaction(transaction)
   }
 
   const handleAddBill = (bill: Bill) => {
-    setBills((current) => [...(current || []), bill])
+    addBill(bill)
   }
 
   const handleAddGoal = (goal: Goal) => {
-    setGoals((current) => [...(current || []), goal])
+    addGoal(goal)
   }
 
   const handleToggleBillPaid = (billId: string) => {
-    setBills((current) =>
-      (current || []).map((bill) =>
-        bill.id === billId
-          ? { ...bill, status: bill.status === 'paid' ? 'pending' : 'paid' as const }
-          : bill
-      )
-    )
+    const bill = bills.find(b => b.id === billId)
+    if (bill) {
+      updateBill(billId, {
+        status: bill.status === 'paid' ? 'pending' : 'paid'
+      })
+    }
   }
 
   const handleDeleteTransaction = (transactionId: string) => {
-    setTransactions((current) =>
-      (current || []).filter((t) => t.id !== transactionId)
-    )
+    removeTransaction(transactionId)
     toast.success(t.transactions.deleted)
   }
 
   const handleLanguageChange = (newLanguage: Language) => {
-    setLanguage(newLanguage)
+    setStorageLanguage(newLanguage)
     toast.success(
       newLanguage === 'pt-BR' 
         ? 'Idioma alterado para Português (Brasil)' 
