@@ -2,6 +2,7 @@
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "target": "ES2020",
+    "baseUrl": ".",
     "useDefineForClassFields": true,
     "lib": [
       "ES2020",
@@ -24,6 +25,10 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ]
+      ,
+      "@financeai/infra-db": [
+        "packages/infra/db/src"
       ]
     },
   },

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { Transaction, Bill, Goal } from '@/lib/types'
+import { addTransaction as dbAddTransaction } from '@financeai/infra-db'
 import { SummaryCards } from '@/components/dashboard/SummaryCards'
 import { CategoryBreakdown } from '@/components/dashboard/CategoryBreakdown'
 import { UpcomingBills } from '@/components/dashboard/UpcomingBills'
@@ -63,6 +64,12 @@ function App() {
 
   const handleAddTransaction = (transaction: Transaction) => {
     setTransactions((current) => [...(current || []), transaction])
+    // Persist to Dexie as well (won't break existing useKV until we finish migration)
+    try {
+      dbAddTransaction(transaction)
+    } catch (e) {
+      console.warn('Failed to persist to Dexie:', e)
+    }
   }
 
   const handleAddBill = (bill: Bill) => {
