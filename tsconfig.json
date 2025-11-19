@@ -24,6 +24,9 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@financeai/infra-db": [
+        "./packages/infra-db/src/index.ts"
       ]
     },
   },

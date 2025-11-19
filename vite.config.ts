@@ -19,7 +19,8 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': resolve(projectRoot, 'src')
+      '@': resolve(projectRoot, 'src'),
+      '@financeai/infra-db': resolve(projectRoot, 'packages/infra-db/src/index.ts')
     }
   },
 });
