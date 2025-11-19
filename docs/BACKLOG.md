@@ -19,91 +19,74 @@ Este backlog documenta o trabalho já realizado (Done), o que está em andamento
   - Critério de aceite: Conversão de `ParsedTransaction` para `Transaction`, callback `onImportComplete` implementado
 - Documentação e exemplos de arquivo
   - Files: `docs/*` (`bank-file-upload.md`, `GUIA_INTEGRACAO.md`, `IMPLEMENTACAO_RESUMO.md`, `ARQUIVOS_CRIADOS.md`)
+- **Issue #33:** Integrar `ImportBankFileModal` no `App.tsx` ✅
+  - Botão "Importar Extrato" adicionado ao header com ícone `Upload`
+  - Estado `showImportFile` gerenciado
+  - Função `handleImportComplete` persiste transações no `useKV` e `Dexie`
+  - Toast de sucesso exibido após importação
+  - Files: `src/App.tsx`, `src/components/modals/ImportBankFileModal.tsx`
+- **Issue #34:** Criar testes unitários para `bank-file-parser` ✅
+  - Vitest configurado (`vitest.config.ts`)
+  - 28 testes abrangentes cobrindo CSV, OFX, TXT, QIF, date/amount parsing, category suggestion
+  - Scripts npm: `test`, `test:ui`, `test:coverage`
+  - Files: `src/lib/bank-file-parser.test.ts`, `src/test/setup.ts`, `vitest.config.ts`
+- **Issue #35:** Criar testes E2E para fluxo de upload/importação ✅
+  - Playwright configurado (`playwright.config.ts`)
+  - Testes E2E criados em `e2e/import-flow.spec.ts`
+  - Script npm: `test:e2e`, `test:e2e:ui`, `test:e2e:headed`
+  - Files: `e2e/import-flow.spec.ts`, `playwright.config.ts`
+- **Issue #36:** Detectar e prevenir transações duplicadas ✅
+  - Módulo `duplicate-detector.ts` criado
+  - Funções: `generateTransactionHash()`, `findDuplicates()`, `removeDuplicateTransactions()`
+  - Integrado no `ImportBankFileModal` com UI para avisar duplicatas
+  - Files: `src/lib/duplicate-detector.ts`
+- **Issue #37:** Suporte para QIF ✅
+  - Função `parseQIF()` adicionada ao `bank-file-parser.ts`
+  - Type `BankFileFormat` atualizado para incluir `'qif'`
+  - Detecção automática de formato QIF
+  - Files: `src/lib/bank-file-parser.ts`, `src/lib/types.ts`
+- **Issue #38:** Mapeamento de categorias customizável ✅
+  - Interface `CategoryMappingRule` definida
+  - Hook `useCategoryRules` para gerenciar regras no localStorage
+  - Componente `CategoryMappingModal` com CRUD de regras
+  - Suporte a regex e text matching
+  - Files: `src/components/modals/CategoryMappingModal.tsx`, `src/hooks/use-category-rules.ts`
+- **Issue #39:** Permitir múltiplos arquivos simultâneos ✅
+  - BankFileUpload aceita múltiplos arquivos
+  - Progress bar individual por arquivo e geral do lote
+  - Processing paralelo com Promise.all
+  - UI com status icons, badges e summary
+  - Files: `src/components/BankFileUpload.tsx`
+- **Issue #42:** CI (lint, build, testes) ✅
+  - Pipeline `.github/workflows/ci.yml` criado
+  - Executa em PRs e push para `main`
+  - Steps: checkout, setup Node 20, install, lint, build, test, coverage
+  - Files: `.github/workflows/ci.yml`
 
 ---
 
 ## 🔄 In Progress
-1. Integrar `ImportBankFileModal` no `App.tsx`
-   - O que fazer:
-     - Adicionar botão no header (`Importar Extrato`)
-     - Adicionar `showImportFile` no estado
-     - Implementar `handleImportComplete` para gravar no `useKV`/Dexie
-     - Testar com `docs/examples/*`
-   - Critério de aceite:
-     - Botão abre modal e a importação adiciona transações ao estado e persiste conforme política de armazenamento
-   - Responsável: @fabioaap
-   - Estimativa: 1h
+_(Nenhuma issue em progresso no momento)_
 
 ---
 
-## 📝 To Do (Prioridade Alta)
-2. Criar testes unitários para `bank-file-parser`
-   - Abordagem: Vitest/Jest + fixtures em `docs/examples`
-   - Casos:
-     - CSV formatos (vírgula e ponto-e-vírgula)
-     - OFX com e sem MEMO
-     - TXT com padrões variados
-     - Datas inválidas e valores malformados
-   - Critério de aceite: cobertura >= 80% das rotinas principais
-   - Estimativa: 2-3h
-
-3. Criar testes E2E para fluxo de upload/importação
-   - Ferramenta: Playwright / Cypress
-   - Fluxo:
-     - Abrir modal, dropar arquivo, visualizar prévia, confirmar import
-     - Validar inserção na UI e persistência local
-   - Critério de aceite: testes automatizados na pipeline
-   - Estimativa: 3-4h
-
-4. Detectar e prevenir transações duplicadas
-   - Estratégia: gerar hash por `date + amount + description` antes de inserir
-   - UI: mostrar alert/checkbox na preview para ignorar/mesclar duplicatas
-   - Critério de aceite: não inserir duplicatas e opção de mesclagem
-   - Estimativa: 3h
-
----
-
-## 🧭 To Do (Prioridade Média)
-5. Suporte para QIF
-   - Adicionar `parseQIF()` e atualizar `BankFileFormat`
-   - Critério de aceite: arquivos QIF são parseados corretamente
-   - Estimativa: 2-3h
-
-6. Mapeamento de categorias customizável
-   - UI para mapear descrições/palavras-chave para categorias
-   - Persistir regras no DB local (Dexie)
-   - Critério de aceite: usuário consegue criar regra, e parser aplica regras no processamento
-   - Estimativa: 4-5h
-
-7. Permitir múltiplos arquivos simultâneos
-   - UI: aceitar array de arquivos no upload
-   - UX: barra de progresso por arquivo e por lote
-   - Critério de aceite: múltiplos arquivos processados com feedback
-   - Estimativa: 4h
-
----
-
-## ⚙️ To Do (Prioridade Baixa / Futuro)
-8. Otimizar parser para arquivos grandes (>10k linhas)
+## 📝 To Do (Prioridade Baixa / Futuro)
+**Issue #40:** Otimizar parser para arquivos grandes (>10k linhas)
    - Técnica: WebWorker / stream parsing
    - Critério de aceite: tempo de parse aceitável, UI não travando
    - Estimativa: 2-3 dias
 
-9. Integração com Sync Engine / armazenamento em nuvem
+**Issue #41:** Integração com Sync Engine / armazenamento em nuvem
    - Sincronizar com backend; planejamento de conflict resolution
    - Critério de aceite: sincronização confiável com rollback
    - Estimativa: depende de infra
-
-10. CI (lint, build, testes)
-   - Integrar pipeline (GitHub Actions) com lint, build e testes
-   - Critério de aceite: pipeline em PRs
-   - Estimativa: 4h
 
 ---
 
 ## 📌 Observações
 - `@financeai/infra-db` é referenciado em `App.tsx`, mas pode não existir no workspace; confirme se prefere usar `useKV` ou conectar ao pacote.
-- Criar issues no repo para cada item do backlog facilita acompanhamento e atribuição; posso criar PRs/Issues se desejar.
+- ✅ 8 de 10 issues do backlog original estão concluídas (80%)
+- Apenas 2 issues futuras/baixa prioridade permanecem (#40 e #41)
 
 ---
 
