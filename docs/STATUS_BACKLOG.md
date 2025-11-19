@@ -1,14 +1,14 @@
 # 🚀 Status de Implementação - Backlog FinanceAI
 
 **Data de atualização:** 19 de novembro de 2025  
-**Progresso geral:** 70% concluído (7/10 issues)
+**Progresso geral:** 80% concluído (8/10 issues)
 
 **🔗 GitHub Project:** https://github.com/users/fabioaap/projects/2  
 **📊 Issues do Repositório:** https://github.com/fabioaap/FinanceAI/issues
 
 ---
 
-## ✅ Issues Concluídas (7/10)
+## ✅ Issues Concluídas (8/10)
 
 ### Issue #33: Integrar ImportBankFileModal no App ✅
 **Status:** ✅ CONCLUÍDO  
@@ -156,22 +156,30 @@
 
 ---
 
-## 🔄 Issues em Progresso (0/3 atualmente)
-
-### Issue #39: Permitir múltiplos arquivos simultâneos no upload
-**Status:** ⏳ PENDENTE  
+### Issue #39: Permitir múltiplos arquivos simultâneos no upload ✅
+**Status:** ✅ CONCLUÍDO  
 **GitHub:** https://github.com/fabioaap/FinanceAI/issues/39  
-**Prioridade:** Média  
-**Estimativa:** 4h  
+**Commit:** (latest)  
 
-**Tarefas:**
-- [ ] Atualizar `BankFileUpload` para aceitar múltiplos arquivos
-- [ ] Adicionar progress bar por arquivo
-- [ ] Adicionar progress bar geral do lote
-- [ ] Tratamento de erros por arquivo
-- [ ] UI para mostrar status de cada arquivo
+**Implementação:**
+- ✅ BankFileUpload atualizado para aceitar múltiplos arquivos
+- ✅ Interface `FileWithResult` para rastrear status individual
+- ✅ Progress bar individual por arquivo
+- ✅ Progress bar geral do lote (overallProgress)
+- ✅ Processing paralelo com Promise.all
+- ✅ Tratamento de erros por arquivo
+- ✅ UI com lista de arquivos, status icons e badges
+- ✅ Suporte a drag-and-drop de múltiplos arquivos
+- ✅ Botão para remover arquivos pendentes
+- ✅ Summary com contadores de sucesso/erro/pendente
+- ✅ Prop `allowMultiple` para habilitar/desabilitar feature
+
+**Arquivos modificados:**
+- `src/components/BankFileUpload.tsx`
 
 ---
+
+## 🔄 Issues em Progresso (0/2 atualmente)
 
 ### Issue #40: Otimizar parser para arquivos grandes (>10k linhas)
 **Status:** ⏳ PENDENTE / FUTURO  
@@ -206,9 +214,9 @@
 
 ## 📈 Métricas
 
-**Issues concluídas:** 7/10 (70%) ✅  
+**Issues concluídas:** 8/10 (80%) ✅  
 **Issues em progresso:** 0/10 (0%)  
-**Issues pendentes:** 3/10 (30%)  
+**Issues pendentes:** 2/10 (20%)  
 
 **Tempo estimado restante:**  
 - Média prioridade: ~8-9h (Issues #38, #39)
