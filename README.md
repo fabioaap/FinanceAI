@@ -78,6 +78,14 @@ npm run lint
 npm test
 ```
 
+### Arquivos de Exemplo
+
+Na pasta `examples/` você encontrará arquivos de exemplo para testar a aplicação:
+- `exemplo.csv` - Arquivo CSV com transações de exemplo
+- `exemplo.ofx` - Arquivo OFX com transações de exemplo
+
+Use estes arquivos para testar a funcionalidade de importação.
+
 ## 📝 Scripts Disponíveis
 
 | Script | Descrição |
