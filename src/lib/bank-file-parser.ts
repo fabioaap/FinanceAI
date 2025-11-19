@@ -66,6 +66,10 @@ export class BankFileParser {
     private detectFormat(fileName: string, content: string): BankFileFormat {
         const extension = fileName.split('.').pop()?.toLowerCase()
 
+        if (extension === 'qif' || content.includes('!Type:')) {
+            return 'qif'
+        }
+
         if (extension === 'ofx' || content.includes('OFX') || content.includes('OFXHEADER')) {
             return 'ofx'
         }
@@ -86,6 +90,8 @@ export class BankFileParser {
                 return this.parseCSV(this.fileContent)
             case 'ofx':
                 return this.parseOFX(this.fileContent)
+            case 'qif':
+                return this.parseQIF(this.fileContent)
             case 'txt':
                 return this.parseTXT(this.fileContent)
             default:
@@ -251,6 +257,155 @@ export class BankFileParser {
         }
 
         return transactions
+    }
+
+    /**
+     * Parser para arquivos QIF (Quicken Interchange Format)
+     * Formato usado por Quicken, Microsoft Money e outros
+     */
+    private parseQIF(content: string): ParsedTransaction[] {
+        const transactions: ParsedTransaction[] = []
+        const lines = content.split('\n').map(l => l.trim()).filter(l => l)
+
+        let currentTransaction: Partial<ParsedTransaction> = {}
+
+        for (const line of lines) {
+            try {
+                // Nova transação
+                if (line.startsWith('!Type:')) {
+                    continue // Header line
+                }
+
+                // Separador de transação
+                if (line === '^') {
+                    if (currentTransaction.date && currentTransaction.amount !== undefined) {
+                        const txn: ParsedTransaction = {
+                            date: currentTransaction.date,
+                            description: currentTransaction.description || 'Transação',
+                            amount: Math.abs(currentTransaction.amount),
+                            type: currentTransaction.type || 'expense',
+                            category: currentTransaction.category || this.suggestCategory(currentTransaction.description || '')
+                        }
+                        transactions.push(txn)
+                    }
+                    currentTransaction = {}
+                    continue
+                }
+
+                // Data (D)
+                if (line.startsWith('D')) {
+                    const dateStr = line.substring(1).trim()
+                    const date = this.parseQIFDate(dateStr)
+                    if (date) {
+                        currentTransaction.date = date.toISOString().split('T')[0]
+                    }
+                }
+
+                // Valor (T)
+                if (line.startsWith('T')) {
+                    const amountStr = line.substring(1).trim()
+                    const amount = this.parseAmount(amountStr)
+                    currentTransaction.amount = Math.abs(amount)
+                    currentTransaction.type = amount < 0 ? 'expense' : 'income'
+                }
+
+                // Descrição/Payee (P)
+                if (line.startsWith('P')) {
+                    currentTransaction.description = line.substring(1).trim()
+                }
+
+                // Memo (M)
+                if (line.startsWith('M') && !currentTransaction.description) {
+                    currentTransaction.description = line.substring(1).trim()
+                }
+
+                // Categoria (L)
+                if (line.startsWith('L')) {
+                    const categoryStr = line.substring(1).trim()
+                    // QIF categories podem ser "Category:Subcategory"
+                    const mappedCategory = this.mapQIFCategory(categoryStr)
+                    if (mappedCategory) {
+                        currentTransaction.category = mappedCategory
+                    }
+                }
+            } catch (error) {
+                console.warn('Erro ao processar linha QIF:', line, error)
+            }
+        }
+
+        // Adiciona última transação se existir
+        if (currentTransaction.date && currentTransaction.amount !== undefined) {
+            const txn: ParsedTransaction = {
+                date: currentTransaction.date,
+                description: currentTransaction.description || 'Transação',
+                amount: Math.abs(currentTransaction.amount),
+                type: currentTransaction.type || 'expense',
+                category: currentTransaction.category || this.suggestCategory(currentTransaction.description || '')
+            }
+            transactions.push(txn)
+        }
+
+        return transactions
+    }
+
+    /**
+     * Parse de data QIF (formatos: M/D/YYYY, M/D'YY, DD/MM/YYYY)
+     */
+    private parseQIFDate(dateStr: string): Date | null {
+        try {
+            // Remove espaços e apóstrofos
+            const cleaned = dateStr.trim().replace(/'/g, '')
+
+            // Formato M/D/YYYY ou M/D/YY
+            const mdyMatch = cleaned.match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/)
+            if (mdyMatch) {
+                let [, month, day, year] = mdyMatch
+                // Se ano com 2 dígitos, assume 20xx
+                if (year.length === 2) {
+                    year = '20' + year
+                }
+                return new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
+            }
+
+            // Fallback para parser geral
+            return this.parseDate(cleaned)
+        } catch {
+            return null
+        }
+    }
+
+    /**
+     * Mapeia categoria QIF para CategoryType
+     */
+    private mapQIFCategory(qifCategory: string): CategoryType | undefined {
+        const lower = qifCategory.toLowerCase()
+
+        if (lower.includes('food') || lower.includes('groceries') || lower.includes('restaurant')) {
+            return 'food'
+        }
+        if (lower.includes('transport') || lower.includes('gas') || lower.includes('auto')) {
+            return 'transport'
+        }
+        if (lower.includes('shopping') || lower.includes('clothing')) {
+            return 'shopping'
+        }
+        if (lower.includes('health') || lower.includes('medical') || lower.includes('doctor')) {
+            return 'health'
+        }
+        if (lower.includes('home') || lower.includes('utilities') || lower.includes('rent')) {
+            return 'home'
+        }
+        if (lower.includes('entertainment') || lower.includes('recreation')) {
+            return 'entertainment'
+        }
+        if (lower.includes('education') || lower.includes('school')) {
+            return 'education'
+        }
+        if (lower.includes('salary') || lower.includes('income') || lower.includes('work')) {
+            return 'work'
+        }
+
+        return undefined
     }
 
     /**

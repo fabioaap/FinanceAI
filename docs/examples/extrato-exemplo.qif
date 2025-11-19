@@ -1,0 +1,31 @@
+!Type:Bank
+D11/01/2024
+T-150.50
+PSupermercado Extra
+MCompra semanal
+LFood:Groceries
+^
+D11/02/2024
+T3500.00
+PSalário Empresa XYZ
+MSalário mensal
+LIncome:Salary
+^
+D11/03/2024
+T-1200.00
+PImobiliária ABC
+MAluguel novembro
+LHome:Rent
+^
+D11/05/2024
+T-80.50
+PFarmácia Drogasil
+MRemédios
+LHealth:Medical
+^
+D11/10/2024
+T-45.00
+PUber
+MTransporte trabalho
+LTransport:Taxi
+^

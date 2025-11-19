@@ -48,7 +48,7 @@ export interface CategoryInfo {
 }
 
 // Tipos para upload de arquivos bancários
-export type BankFileFormat = 'csv' | 'ofx' | 'txt'
+export type BankFileFormat = 'csv' | 'ofx' | 'txt' | 'qif'
 
 export interface ParsedTransaction {
   date: string
