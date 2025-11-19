@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
-import { addTransaction, getAllTransactions, addCategory, getAllCategories } from '@financeai/infra-db'
+// import { addTransaction, getAllTransactions, addCategory, getAllCategories } from '@financeai/infra-db'
 
+// TODO: Migrar para Dexie ou remover se não for mais necessário
 export function useTransactions() {
   const [loading, setLoading] = useState(false)
   const [transactions, setTransactions] = useState([])
@@ -8,19 +9,20 @@ export function useTransactions() {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await getAllTransactions()
-      setTransactions(res)
+      // const res = await getAllTransactions()
+      // setTransactions(res)
     } finally {
       setLoading(false)
     }
   }, [])
 
-  const add = useCallback(async (t) => {
+  const add = useCallback(async (t: any) => {
     setLoading(true)
     try {
-      const id = await addTransaction(t)
-      await load()
-      return id
+      // const id = await addTransaction(t)
+      // await load()
+      // return id
+      return ''
     } finally {
       setLoading(false)
     }
@@ -41,19 +43,20 @@ export function useCategories() {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await getAllCategories()
-      setCategories(res)
+      // const res = await getAllCategories()
+      // setCategories(res)
     } finally {
       setLoading(false)
     }
   }, [])
 
-  const add = useCallback(async (c) => {
+  const add = useCallback(async (c: any) => {
     setLoading(true)
     try {
-      const id = await addCategory(c)
-      await load()
-      return id
+      // const id = await addCategory(c)
+      // await load()
+      // return id
+      return ''
     } finally {
       setLoading(false)
     }

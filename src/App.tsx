@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { Transaction, Bill, Goal } from '@/lib/types'
-import { addTransaction as dbAddTransaction } from '@financeai/infra-db'
 import { SummaryCards } from '@/components/dashboard/SummaryCards'
 import { CategoryBreakdown } from '@/components/dashboard/CategoryBreakdown'
 import { UpcomingBills } from '@/components/dashboard/UpcomingBills'
@@ -13,6 +12,7 @@ import { AddBillModal } from '@/components/modals/AddBillModal'
 import { AddGoalModal } from '@/components/modals/AddGoalModal'
 import { SettingsModal } from '@/components/modals/SettingsModal'
 import { ImportBankFileModal } from '@/components/modals/ImportBankFileModal'
+import { CategoryMappingModal } from '@/components/modals/CategoryMappingModal'
 import { Button } from '@/components/ui/button'
 import { Plus, CaretLeft, CaretRight, ClockCounterClockwise, House, Gear, Upload } from '@phosphor-icons/react'
 import { formatMonthYear, getMonthKey } from '@/lib/constants'
@@ -37,6 +37,7 @@ function App() {
   const [showHistory, setShowHistory] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [showImportFile, setShowImportFile] = useState(false)
+  const [showCategoryMapping, setShowCategoryMapping] = useState(false)
 
   const income = (transactions || [])
     .filter((t) => t.type === 'income')
@@ -66,12 +67,6 @@ function App() {
 
   const handleAddTransaction = (transaction: Transaction) => {
     setTransactions((current) => [...(current || []), transaction])
-    // Persist to Dexie as well (won't break existing useKV until we finish migration)
-    try {
-      dbAddTransaction(transaction)
-    } catch (e) {
-      console.warn('Failed to persist to Dexie:', e)
-    }
   }
 
   const handleAddBill = (bill: Bill) => {
@@ -110,12 +105,6 @@ function App() {
 
   const handleImportComplete = (importedTransactions: Transaction[]) => {
     setTransactions((current) => [...(current || []), ...importedTransactions])
-    // Persist to Dexie as well
-    try {
-      importedTransactions.forEach(txn => dbAddTransaction(txn))
-    } catch (e) {
-      console.warn('Failed to persist imported transactions to Dexie:', e)
-    }
     toast.success(
       language === 'pt-BR'
         ? `${importedTransactions.length} transações importadas com sucesso!`
@@ -278,6 +267,10 @@ function App() {
         onClose={() => setShowSettings(false)}
         language={language || 'en'}
         onLanguageChange={handleLanguageChange}
+        onOpenCategoryMapping={() => {
+          setShowSettings(false)
+          setShowCategoryMapping(true)
+        }}
         translations={t}
       />
 
@@ -285,6 +278,11 @@ function App() {
         open={showImportFile}
         onOpenChange={setShowImportFile}
         onImportComplete={handleImportComplete}
+      />
+
+      <CategoryMappingModal
+        open={showCategoryMapping}
+        onOpenChange={setShowCategoryMapping}
       />
 
       <Toaster />

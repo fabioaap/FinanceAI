@@ -7,14 +7,15 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import type { BankFileParseResult, ParsedTransaction } from '@/lib/types'
-import { parseBankFile } from '@/lib/bank-file-parser'
+import { parseBankFile, type CategoryMappingRule } from '@/lib/bank-file-parser'
 
 interface BankFileUploadProps {
     onTransactionsParsed: (transactions: ParsedTransaction[]) => void
     onClose?: () => void
+    customRules?: CategoryMappingRule[]
 }
 
-export function BankFileUpload({ onTransactionsParsed, onClose }: BankFileUploadProps) {
+export function BankFileUpload({ onTransactionsParsed, onClose, customRules = [] }: BankFileUploadProps) {
     const [file, setFile] = useState<File | null>(null)
     const [isDragging, setIsDragging] = useState(false)
     const [isProcessing, setIsProcessing] = useState(false)
@@ -76,7 +77,7 @@ export function BankFileUpload({ onTransactionsParsed, onClose }: BankFileUpload
         setParseResult(null)
 
         try {
-            const result = await parseBankFile(file)
+            const result = await parseBankFile(file, customRules)
             setParseResult(result)
 
             if (result.success && result.transactions.length > 0) {

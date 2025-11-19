@@ -1,14 +1,14 @@
 # 🚀 Status de Implementação - Backlog FinanceAI
 
 **Data de atualização:** 19 de novembro de 2025  
-**Progresso geral:** 60% concluído (6/10 issues)
+**Progresso geral:** 70% concluído (7/10 issues)
 
 **🔗 GitHub Project:** https://github.com/users/fabioaap/projects/2  
 **📊 Issues do Repositório:** https://github.com/fabioaap/FinanceAI/issues
 
 ---
 
-## ✅ Issues Concluídas (6/10)
+## ✅ Issues Concluídas (7/10)
 
 ### Issue #33: Integrar ImportBankFileModal no App ✅
 **Status:** ✅ CONCLUÍDO  
@@ -129,21 +129,34 @@
 
 ---
 
-## 🔄 Issues em Progresso (0/4 atualmente)
-
-### Issue #38: Mapeamento de categorias customizável
-**Status:** ⏳ PENDENTE  
+### Issue #38: Mapeamento de categorias customizável ✅
+**Status:** ✅ CONCLUÍDO  
 **GitHub:** https://github.com/fabioaap/FinanceAI/issues/38  
-**Prioridade:** Média  
-**Estimativa:** 4-5h  
+**Commit:** (latest)  
 
-**Tarefas:**
-- [ ] Criar UI para mapear descrições/palavras-chave para categorias
-- [ ] Persistir regras no Dexie (tabela `category_rules`)
-- [ ] Atualizar `bank-file-parser` para aplicar regras customizadas
-- [ ] Criar modal de configuração de regras
+**Implementação:**
+- ✅ Interface `CategoryMappingRule` definida em `bank-file-parser.ts`
+- ✅ Parser atualizado para aplicar regras customizadas com prioridade
+- ✅ Hook `useCategoryRules` para gerenciar regras no localStorage
+- ✅ Componente `CategoryMappingModal` criado com CRUD de regras
+- ✅ Integração com `SettingsModal` para acesso às configurações
+- ✅ Integração com `BankFileUpload` e `ImportBankFileModal`
+- ✅ Suporte a regex e text matching
+
+**Arquivos criados:**
+- `src/components/modals/CategoryMappingModal.tsx`
+- `src/hooks/use-category-rules.ts`
+
+**Arquivos modificados:**
+- `src/lib/bank-file-parser.ts`
+- `src/components/BankFileUpload.tsx`
+- `src/components/modals/ImportBankFileModal.tsx`
+- `src/components/modals/SettingsModal.tsx`
+- `src/App.tsx`
 
 ---
+
+## 🔄 Issues em Progresso (0/3 atualmente)
 
 ### Issue #39: Permitir múltiplos arquivos simultâneos no upload
 **Status:** ⏳ PENDENTE  
@@ -193,9 +206,9 @@
 
 ## 📈 Métricas
 
-**Issues concluídas:** 6/10 (60%) ✅  
+**Issues concluídas:** 7/10 (70%) ✅  
 **Issues em progresso:** 0/10 (0%)  
-**Issues pendentes:** 4/10 (40%)  
+**Issues pendentes:** 3/10 (30%)  
 
 **Tempo estimado restante:**  
 - Média prioridade: ~8-9h (Issues #38, #39)

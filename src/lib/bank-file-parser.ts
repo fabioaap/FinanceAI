@@ -6,6 +6,14 @@ import type {
     CategoryType
 } from './types'
 
+export interface CategoryMappingRule {
+    id: string
+    pattern: string
+    category: CategoryType
+    isRegex: boolean
+    priority: number
+}
+
 /**
  * Parser para arquivos bancários em diferentes formatos
  */
@@ -13,9 +21,11 @@ export class BankFileParser {
     private fileName: string
     private fileContent: string
     private format: BankFileFormat | null = null
+    private customRules: CategoryMappingRule[] = []
 
-    constructor(file: File) {
+    constructor(file: File, customRules: CategoryMappingRule[] = []) {
         this.fileName = file.name
+        this.customRules = customRules.sort((a, b) => b.priority - a.priority)
     }
 
     /**
@@ -517,6 +527,14 @@ export class BankFileParser {
      * Sugere categoria baseada na descrição
      */
     private suggestCategory(description: string): CategoryType {
+        // Aplica regras customizadas primeiro (ordenadas por prioridade)
+        for (const rule of this.customRules) {
+            if (this.matchesRule(description, rule)) {
+                return rule.category
+            }
+        }
+
+        // Fallback para regras padrão
         const desc = description.toLowerCase()
 
         if (desc.includes('mercado') || desc.includes('supermercado') || desc.includes('restaurante') ||
@@ -560,12 +578,31 @@ export class BankFileParser {
 
         return 'other'
     }
+
+    /**
+     * Verifica se a descrição corresponde a uma regra de mapeamento
+     */
+    private matchesRule(description: string, rule: CategoryMappingRule): boolean {
+        try {
+            if (rule.isRegex) {
+                const regex = new RegExp(rule.pattern, 'i')
+                return regex.test(description)
+            } else {
+                return description.toLowerCase().includes(rule.pattern.toLowerCase())
+            }
+        } catch {
+            return false
+        }
+    }
 }
 
 /**
  * Função auxiliar para fazer parse de arquivo bancário
  */
-export async function parseBankFile(file: File): Promise<BankFileParseResult> {
-    const parser = new BankFileParser(file)
+export async function parseBankFile(
+    file: File,
+    customRules: CategoryMappingRule[] = []
+): Promise<BankFileParseResult> {
+    const parser = new BankFileParser(file, customRules)
     return parser.parse(file)
 }

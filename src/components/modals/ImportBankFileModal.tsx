@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { CheckCircle2, AlertCircle } from 'lucide-react'
 import type { ParsedTransaction, Transaction } from '@/lib/types'
+import { useCategoryRules } from '@/hooks/use-category-rules'
 
 interface ImportBankFileModalProps {
     open: boolean
@@ -23,6 +24,7 @@ export function ImportBankFileModal({
     onOpenChange,
     onImportComplete
 }: ImportBankFileModalProps) {
+    const { rules } = useCategoryRules()
     const [isImporting, setIsImporting] = useState(false)
     const [importResult, setImportResult] = useState<{
         success: boolean
@@ -107,6 +109,7 @@ export function ImportBankFileModal({
                     <BankFileUpload
                         onTransactionsParsed={handleTransactionsParsed}
                         onClose={handleClose}
+                        customRules={rules}
                     />
                 )}
 
