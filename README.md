@@ -6,6 +6,7 @@ Aplicação web para importação e visualização de extratos bancários nos fo
 
 - **Upload de Arquivos**: Interface drag-and-drop para upload de arquivos
 - **Suporte a Múltiplos Formatos**:
+  - PDF (Portable Document Format) - Extratos bancários em PDF
   - OFX (Open Financial Exchange)
   - CSV (Comma-Separated Values)
 - **Visualização de Transações**: Tabela interativa com todas as transações importadas
@@ -18,6 +19,7 @@ Aplicação web para importação e visualização de extratos bancários nos fo
 - **TypeScript** - Type safety
 - **Vite** - Build tool e dev server
 - **Tailwind CSS** - Estilização
+- **pdf.js** - Parser PDF (pdfjs-dist)
 - **fast-xml-parser** - Parser OFX
 - **PapaParse** - Parser CSV
 - **ESLint** - Linting
@@ -99,12 +101,31 @@ Use estes arquivos para testar a funcionalidade de importação.
 ## 🎯 Como Usar
 
 1. Acesse a aplicação
-2. Arraste um arquivo OFX ou CSV para a área de upload, ou clique para selecionar
+2. Arraste um arquivo PDF, OFX ou CSV para a área de upload, ou clique para selecionar
 3. Aguarde o processamento do arquivo
 4. Visualize as transações importadas na tabela
 5. Confira os totalizadores e informações da conta
 
 ## 📄 Formatos de Arquivo Suportados
+
+### PDF (Portable Document Format)
+
+Extrai transações de extratos bancários em formato PDF. O parser suporta:
+- Extração automática de texto de PDFs
+- Detecção de padrões de data, descrição e valor
+- Identificação automática de débitos e créditos
+- Suporte para PDFs de texto (não funciona com PDFs escaneados/imagem)
+- Detecção automática de informações bancárias
+
+**Formato esperado no PDF:**
+- Linhas contendo: DATA DESCRIÇÃO VALOR
+- Exemplo: `15/01/2024 COMPRA MERCADO 150,00`
+- Formatos de data suportados: DD/MM/YYYY, DD-MM-YYYY, YYYY-MM-DD
+
+**Limitações:**
+- PDFs protegidos ou com senha não são suportados
+- PDFs escaneados (apenas imagem) não são suportados - necessário OCR
+- Formatos proprietários muito específicos podem não ser reconhecidos
 
 ### OFX (Open Financial Exchange)
 
@@ -184,6 +205,13 @@ FinanceAI/
 ISC
 
 ## 🐛 Troubleshooting
+
+### Erro ao importar arquivo PDF
+
+- **PDF protegido ou com senha**: Remova a proteção antes de importar
+- **PDF escaneado (apenas imagem)**: O parser atual não suporta OCR. Use um conversor online para extrair o texto ou utilize o formato OFX/CSV do seu banco
+- **Formato não reconhecido**: Alguns bancos usam formatos proprietários. Tente exportar em OFX ou CSV
+- **Erro de worker**: Se aparecer erro relacionado a `pdf.worker.min.js`, verifique se o arquivo está em `/libs/pdf.worker.min.js` (copiar durante build)
 
 ### Erro ao importar arquivo OFX
 
