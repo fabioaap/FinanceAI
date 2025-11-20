@@ -24,11 +24,11 @@ interface BankFileUploadProps {
     allowMultiple?: boolean
 }
 
-export function BankFileUpload({ 
-    onTransactionsParsed, 
-    onClose, 
+export function BankFileUpload({
+    onTransactionsParsed,
+    onClose,
     customRules = [],
-    allowMultiple = true 
+    allowMultiple = true
 }: BankFileUploadProps) {
     const [files, setFiles] = useState<FileWithResult[]>([])
     const [isDragging, setIsDragging] = useState(false)
@@ -40,7 +40,7 @@ export function BankFileUpload({
 
     const handleFileSelect = useCallback((selectedFiles: FileList | File[]) => {
         const fileArray = Array.from(selectedFiles)
-        
+
         const newFiles: FileWithResult[] = fileArray.map(file => {
             // Valida tamanho
             if (file.size > maxFileSizeMB * 1024 * 1024) {
@@ -109,16 +109,16 @@ export function BankFileUpload({
     const processFile = async (fileWithResult: FileWithResult): Promise<FileWithResult> => {
         try {
             // Simula progresso
-            setFiles(prev => prev.map(f => 
-                f.id === fileWithResult.id 
+            setFiles(prev => prev.map(f =>
+                f.id === fileWithResult.id
                     ? { ...f, status: 'processing' as const, progress: 30 }
                     : f
             ))
 
             const result = await parseBankFile(fileWithResult.file, customRules)
 
-            setFiles(prev => prev.map(f => 
-                f.id === fileWithResult.id 
+            setFiles(prev => prev.map(f =>
+                f.id === fileWithResult.id
                     ? { ...f, progress: 100 }
                     : f
             ))
@@ -209,7 +209,7 @@ export function BankFileUpload({
     const processingFiles = files.filter(f => f.status === 'processing').length
     const successFiles = files.filter(f => f.status === 'success').length
     const errorFiles = files.filter(f => f.status === 'error').length
-    const overallProgress = totalFiles > 0 
+    const overallProgress = totalFiles > 0
         ? Math.round((files.reduce((sum, f) => sum + f.progress, 0) / totalFiles))
         : 0
 
@@ -221,7 +221,7 @@ export function BankFileUpload({
                     Upload de Extrato Bancário
                 </CardTitle>
                 <CardDescription>
-                    {allowMultiple 
+                    {allowMultiple
                         ? 'Importe transações de múltiplos arquivos CSV, OFX, QIF ou TXT'
                         : 'Importe transações de arquivo CSV, OFX, QIF ou TXT'
                     }
@@ -245,7 +245,7 @@ export function BankFileUpload({
                     >
                         <FileText className="h-12 w-12 mx-auto mb-4 text-gray-400" />
                         <p className="text-sm text-gray-600 mb-2">
-                            {files.length === 0 
+                            {files.length === 0
                                 ? 'Arraste e solte arquivos aqui ou clique para selecionar'
                                 : 'Adicionar mais arquivos'
                             }

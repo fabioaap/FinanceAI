@@ -6,9 +6,15 @@ Este diretório contém scripts para automatizar a criação de issues do backlo
 
 ## 📋 Arquivos
 
+### Scripts de Criação
 - **`issues.json`** - Lista estruturada de issues do backlog (título, descrição, labels, assignees, estimativa)
 - **`create_issues_api.ps1`** - Script PowerShell que usa GitHub REST API para criar issues e adicioná-las ao Project (não requer `gh` CLI)
 - **`create_issues_and_add_to_project.ps1`** - Script alternativo que usa `gh` CLI (requer instalação do GitHub CLI)
+
+### Scripts de Atualização ✨
+- **`update_issues_status.ps1`** - Fecha issues concluídas e atualiza labels baseado em `STATUS_BACKLOG.md`
+- **`update_project_kanban.ps1`** - Move cards no kanban (Done/To Do) baseado no status atual
+- **`sync_github_status.ps1`** - **🚀 COMPLETO**: Faz tudo de uma vez (fecha issues + atualiza labels + move no kanban)
 
 ---
 
@@ -93,6 +99,44 @@ pwsh .\scripts\create_issues_and_add_to_project.ps1 -ProjectNumber 2 -Owner fabi
 ```
 
 Instalar GitHub CLI: https://cli.github.com/
+
+---
+
+## 🔄 Sincronizar GitHub com STATUS_BACKLOG.md
+
+### Opção 1: Script Completo (Recomendado) 🚀
+
+Faz **tudo de uma vez**: fecha issues + atualiza labels + move cards no kanban
+
+```pwsh
+# Simulação (dry-run) - recomendado testar primeiro
+pwsh .\scripts\sync_github_status.ps1 -ProjectNumber 2 -Owner fabioaap -DryRun
+
+# Execução real
+pwsh .\scripts\sync_github_status.ps1 -ProjectNumber 2 -Owner fabioaap
+```
+
+**O que faz:**
+- ✅ Fecha as 8 issues concluídas (#33-#39, #42) com comentário
+- 🏷️ Atualiza labels das issues pendentes (#40, #41)
+- 📋 Move cards no kanban do Project para "Done"
+- 📊 Mantém GitHub 100% sincronizado com STATUS_BACKLOG.md
+
+---
+
+### Opção 2: Scripts Individuais
+
+Se preferir controle granular:
+
+**A) Apenas fechar issues e atualizar labels:**
+```pwsh
+pwsh .\scripts\update_issues_status.ps1 -DryRun
+```
+
+**B) Apenas mover cards no kanban:**
+```pwsh
+pwsh .\scripts\update_project_kanban.ps1 -ProjectNumber 2 -Owner fabioaap -DryRun
+```
 
 ---
 
