@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { DragEvent, ChangeEvent } from 'react';
 import { parseOFX } from '../parsers/ofxParser';
 import { parseCSV } from '../parsers/csvParser';
+import { parsePDF } from '../parsers/pdfParser';
 import { readFileAsText } from '../utils/helpers';
 import type { ParseResult } from '../types';
 
@@ -19,17 +20,20 @@ export default function FileUploader({ onParsed }: FileUploaderProps) {
     setIsProcessing(true);
 
     try {
-      const content = await readFileAsText(file);
       const fileExt = file.name.toLowerCase().split('.').pop();
 
       let result: ParseResult;
 
-      if (fileExt === 'ofx') {
+      if (fileExt === 'pdf') {
+        result = await parsePDF(file);
+      } else if (fileExt === 'ofx') {
+        const content = await readFileAsText(file);
         result = parseOFX(content);
       } else if (fileExt === 'csv') {
+        const content = await readFileAsText(file);
         result = parseCSV(content);
       } else {
-        throw new Error('Formato de arquivo não suportado. Use .ofx ou .csv');
+        throw new Error('Formato de arquivo não suportado. Use .pdf, .ofx ou .csv');
       }
 
       onParsed(result);
@@ -105,7 +109,7 @@ export default function FileUploader({ onParsed }: FileUploaderProps) {
                 name="file-upload"
                 type="file"
                 className="sr-only"
-                accept=".ofx,.csv"
+                accept=".pdf,.ofx,.csv"
                 onChange={handleFileInput}
                 disabled={isProcessing}
               />
@@ -114,7 +118,7 @@ export default function FileUploader({ onParsed }: FileUploaderProps) {
           </div>
           
           <p className="text-xs text-gray-500">
-            Arquivos OFX ou CSV até 10MB
+            Arquivos PDF, OFX ou CSV até 10MB
           </p>
         </div>
       </div>
