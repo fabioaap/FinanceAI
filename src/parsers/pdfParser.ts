@@ -34,7 +34,7 @@ function parseDate(dateStr: string): Date | null {
   const normalized = dateStr.trim();
   
   // Try DD/MM/YYYY format
-  const ddmmyyyyMatch = normalized.match(/(\d{1,2})[/.\-](\d{1,2})[/.\-](\d{4})/);
+  const ddmmyyyyMatch = normalized.match(/(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})/);
   if (ddmmyyyyMatch) {
     const [, day, month, year] = ddmmyyyyMatch;
     const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
@@ -44,7 +44,7 @@ function parseDate(dateStr: string): Date | null {
   }
   
   // Try YYYY-MM-DD format
-  const yyyymmddMatch = normalized.match(/(\d{4})[/.\-](\d{1,2})[/.\-](\d{1,2})/);
+  const yyyymmddMatch = normalized.match(/(\d{4})[/.-](\d{1,2})[/.-](\d{1,2})/);
   if (yyyymmddMatch) {
     const [, year, month, day] = yyyymmddMatch;
     const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
