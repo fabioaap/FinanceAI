@@ -1,92 +1,99 @@
 [
     {
         "title": "Integrar ImportBankFileModal no App e persistir transações",
-        "body": "Integrar o componente `ImportBankFileModal` no `App.tsx`, adicionando o botão `Importar Extrato`, gestão de estado `showImportFile`, e a função `handleImportComplete` que persiste transações usando `useKV`/Dexie.\n\n**Critérios de aceite:**\n- Botão abre o modal e permite upload\n- Importação converte `ParsedTransaction` para `Transaction`\n- Transações inseridas aparecem na UI e persistem localmente\n- Teste manual com `docs/examples/*`\n\n**Arquivos relevantes:** `src/components/modals/ImportBankFileModal.tsx`, `src/App.tsx`, `src/hooks/use-db.ts`",
+        "body": "✅ **CONCLUÍDO** - Integração completa do componente `ImportBankFileModal` no `App.tsx`, adicionando o botão `Importar Extrato`, gestão de estado `showImportFile`, e a função `handleImportComplete` que persiste transações usando `useKV`/Dexie.\n\n**Critérios de aceite:**\n- ✅ Botão abre o modal e permite upload\n- ✅ Importação converte `ParsedTransaction` para `Transaction`\n- ✅ Transações inseridas aparecem na UI e persistem localmente\n- ✅ Teste manual com `docs/examples/*`\n\n**Arquivos implementados:** `src/components/modals/ImportBankFileModal.tsx`, `src/App.tsx`, `src/hooks/use-db.ts`",
         "labels": [
-            "in-progress",
+            "done",
             "backend",
             "feature"
         ],
         "assignees": [
             "fabioaap"
         ],
-        "estimate": "1h"
+        "estimate": "1h",
+        "completed": true
     },
     {
         "title": "Adicionar testes unitários para bank-file-parser",
-        "body": "Criar testes unitários para `src/lib/bank-file-parser.ts` usando Vitest/Jest. Utilizar fixtures em `docs/examples` cobrindo:\n- CSV (vírgula e ponto-e-vírgula)\n- OFX (com e sem MEMO)\n- TXT com padrões variados\n- Casos de falha (datas/valores inválidos)\n\n**Critério de aceite:** cobertura >= 80% das rotinas principais",
+        "body": "✅ **CONCLUÍDO** - Testes unitários criados para `src/lib/bank-file-parser.ts` usando Vitest. Fixtures em `docs/examples` cobrindo:\n- ✅ CSV (vírgula e ponto-e-vírgula)\n- ✅ OFX (com e sem MEMO)\n- ✅ TXT com padrões variados\n- ✅ QIF\n- ✅ Casos de falha (datas/valores inválidos)\n\n**Critério de aceite:** ✅ Cobertura >= 80% das rotinas principais alcançada\n**Arquivos criados:** `src/lib/bank-file-parser.test.ts`, `vitest.config.ts`",
         "labels": [
-            "todo",
+            "done",
             "tests"
         ],
         "assignees": [
             "fabioaap"
         ],
-        "estimate": "2-3h"
+        "estimate": "2-3h",
+        "completed": true
     },
     {
         "title": "Criar testes E2E para fluxo de upload/importação",
-        "body": "Implementar testes E2E que verificam o fluxo completo: abrir modal, dropar arquivo, visualizar prévia, confirmar import e validar persistência local no UI. Ferramenta sugerida: Playwright (ou Cypress).\n\n**Critério de aceite:** testes automatizados rodando no pipeline",
+        "body": "✅ **CONCLUÍDO** - Testes E2E implementados que verificam o fluxo completo: abrir modal, dropar arquivo, visualizar prévia, confirmar import e validar persistência local no UI. Ferramenta: Playwright.\n\n**Critério de aceite:** ✅ Testes automatizados rodando no pipeline\n**Arquivos criados:** `e2e/import-flow.spec.ts`, `playwright.config.ts`",
         "labels": [
-            "todo",
+            "done",
             "e2e",
             "tests"
         ],
         "assignees": [
             "fabioaap"
         ],
-        "estimate": "3-4h"
+        "estimate": "3-4h",
+        "completed": true
     },
     {
         "title": "Detectar e prevenir transações duplicadas",
-        "body": "Implementar detecção de duplicatas usando hash (`date + amount + description`) antes de inserir; na UI exibir alert/checkbox para ignorar/mesclar duplicatas.\n\n**Critério de aceite:** não inserir duplicatas ao importar e opção de mesclagem disponível na preview",
+        "body": "✅ **CONCLUÍDO** - Detecção de duplicatas implementada usando hash (`date + amount + description`) antes de inserir; UI exibe alert/checkbox para ignorar/mesclar duplicatas.\n\n**Critério de aceite:** ✅ Não insere duplicatas ao importar e opção de mesclagem disponível na preview\n**Arquivos criados:** `src/lib/duplicate-detector.ts`",
         "labels": [
-            "todo",
+            "done",
             "backend",
             "feature"
         ],
         "assignees": [
             "fabioaap"
         ],
-        "estimate": "3h"
+        "estimate": "3h",
+        "completed": true
     },
     {
         "title": "Adicionar suporte a QIF no parser",
-        "body": "Adicionar `parseQIF()` e atualizar `BankFileFormat` para incluir QIF; adicionar testes e fixtures para QIF.\n\n**Critério de aceite:** arquivos QIF são parseados corretamente e cobertos por testes",
+        "body": "✅ **CONCLUÍDO** - `parseQIF()` adicionado e `BankFileFormat` atualizado para incluir QIF; testes e fixtures para QIF implementados.\n\n**Critério de aceite:** ✅ Arquivos QIF são parseados corretamente e cobertos por testes\n**Arquivos modificados:** `src/lib/bank-file-parser.ts`, `src/lib/types.ts`",
         "labels": [
-            "todo",
+            "done",
             "feature"
         ],
         "assignees": [
             "fabioaap"
         ],
-        "estimate": "2-3h"
+        "estimate": "2-3h",
+        "completed": true
     },
     {
         "title": "Mapeamento de categorias customizável",
-        "body": "Criar UI para mapear descrições/palavras-chave para categorias e persistir regras no DB local (Dexie). Parser deve aplicar regras ao processar arquivos.\n\n**Critério de aceite:** usuário cria regra e parser aplica durante import",
+        "body": "✅ **CONCLUÍDO** - UI criada para mapear descrições/palavras-chave para categorias e persistir regras no localStorage. Parser aplica regras ao processar arquivos.\n\n**Critério de aceite:** ✅ Usuário cria regra e parser aplica durante import\n**Arquivos criados:** `src/components/modals/CategoryMappingModal.tsx`, `src/hooks/use-category-rules.ts`",
         "labels": [
-            "todo",
+            "done",
             "ux",
             "feature"
         ],
         "assignees": [
             "fabioaap"
         ],
-        "estimate": "4-5h"
+        "estimate": "4-5h",
+        "completed": true
     },
     {
         "title": "Permitir múltiplos arquivos simultâneos no upload",
-        "body": "Ajustar componente de upload para aceitar múltiplos arquivos. UI deve mostrar progress por arquivo e por lote; tratar erros por arquivo.\n\n**Critério de aceite:** múltiplos arquivos são processados e o usuário tem feedback de progresso/erros",
+        "body": "✅ **CONCLUÍDO** - Componente de upload ajustado para aceitar múltiplos arquivos. UI mostra progress por arquivo e por lote; trata erros por arquivo.\n\n**Critério de aceite:** ✅ Múltiplos arquivos são processados e o usuário tem feedback de progresso/erros\n**Arquivos modificados:** `src/components/BankFileUpload.tsx`",
         "labels": [
-            "todo",
+            "done",
             "ux",
             "feature"
         ],
         "assignees": [
             "fabioaap"
         ],
-        "estimate": "4h"
+        "estimate": "4h",
+        "completed": true
     },
     {
         "title": "Otimizar parser para arquivos grandes (>10k linhas)",
@@ -98,7 +105,8 @@
         "assignees": [
             "fabioaap"
         ],
-        "estimate": "2-3d"
+        "estimate": "2-3d",
+        "completed": false
     },
     {
         "title": "Integração com Sync Engine / armazenamento em nuvem",
@@ -110,19 +118,21 @@
         "assignees": [
             "fabioaap"
         ],
-        "estimate": "TBD"
+        "estimate": "TBD",
+        "completed": false
     },
     {
         "title": "Adicionar CI (lint, build, testes) para o repo",
-        "body": "Criar pipeline de GitHub Actions para executar lint, build, unit tests e E2E (playwright) em PRs e main. Incluir badge no README.\n\n**Critério de aceite:** pipeline está presente e falha em PRs quando algo está errado",
+        "body": "✅ **CONCLUÍDO** - Pipeline de GitHub Actions criado para executar lint, build, unit tests e E2E (playwright) em PRs e main. Badge incluído no README.\n\n**Critério de aceite:** ✅ Pipeline está presente e falha em PRs quando algo está errado\n**Arquivos criados:** `.github/workflows/ci.yml`",
         "labels": [
-            "todo",
+            "done",
             "ci",
             "infra"
         ],
         "assignees": [
             "fabioaap"
         ],
-        "estimate": "4h"
+        "estimate": "4h",
+        "completed": true
     }
 ]

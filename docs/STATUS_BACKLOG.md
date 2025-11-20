@@ -219,10 +219,9 @@
 **Issues pendentes:** 2/10 (20%)  
 
 **Tempo estimado restante:**  
-- Média prioridade: ~8-9h (Issues #38, #39)
 - Baixa prioridade/Futuro: ~3-5 dias (Issues #40, #41)
 
-**Total estimado:** ~10-15 horas + 3-5 dias para otimizações futuras
+**Total estimado:** ~3-5 dias para otimizações futuras
 
 ---
 
@@ -231,8 +230,8 @@
 1. ~~**Imediato:** Integrar UI de duplicatas no ImportBankFileModal (Issue #36)~~ ✅ Concluído
 2. ~~**Alta prioridade:** Implementar testes E2E com Playwright (Issue #35)~~ ✅ Concluído
 3. ~~**Média prioridade:** Adicionar suporte QIF (Issue #37)~~ ✅ Concluído
-4. **Média prioridade:** Implementar mapeamento de categorias (Issue #38)
-5. **Média prioridade:** Upload múltiplo de arquivos (Issue #39)
+4. ~~**Média prioridade:** Implementar mapeamento de categorias (Issue #38)~~ ✅ Concluído
+5. ~~**Média prioridade:** Upload múltiplo de arquivos (Issue #39)~~ ✅ Concluído
 6. **Futuro:** Otimizar para arquivos grandes (Issue #40)
 7. **Futuro:** Sync Engine (Issue #41)
 
