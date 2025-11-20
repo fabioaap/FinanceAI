@@ -19,17 +19,22 @@ export default function FileUploader({ onParsed }: FileUploaderProps) {
     setIsProcessing(true);
 
     try {
-      const content = await readFileAsText(file);
       const fileExt = file.name.toLowerCase().split('.').pop();
 
       let result: ParseResult;
 
-      if (fileExt === 'ofx') {
+      if (fileExt === 'pdf') {
+        // Lazy-load PDF parser para não incluir pdfjs-dist no bundle principal
+        const { parsePDF } = await import('../parsers/pdfParser');
+        result = await parsePDF(file);
+      } else if (fileExt === 'ofx') {
+        const content = await readFileAsText(file);
         result = parseOFX(content);
       } else if (fileExt === 'csv') {
+        const content = await readFileAsText(file);
         result = parseCSV(content);
       } else {
-        throw new Error('Formato de arquivo não suportado. Use .ofx ou .csv');
+        throw new Error('Formato de arquivo não suportado. Use .pdf, .ofx ou .csv');
       }
 
       onParsed(result);
@@ -69,11 +74,10 @@ export default function FileUploader({ onParsed }: FileUploaderProps) {
   return (
     <div className="w-full max-w-2xl mx-auto">
       <div
-        className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-          isDragging
+        className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${isDragging
             ? 'border-blue-500 bg-blue-50'
             : 'border-gray-300 hover:border-gray-400'
-        }`}
+          }`}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -93,7 +97,7 @@ export default function FileUploader({ onParsed }: FileUploaderProps) {
               strokeLinejoin="round"
             />
           </svg>
-          
+
           <div className="text-gray-600">
             <label
               htmlFor="file-upload"
@@ -105,16 +109,16 @@ export default function FileUploader({ onParsed }: FileUploaderProps) {
                 name="file-upload"
                 type="file"
                 className="sr-only"
-                accept=".ofx,.csv"
+                accept=".pdf,.ofx,.csv"
                 onChange={handleFileInput}
                 disabled={isProcessing}
               />
             </label>
             <span> ou arraste e solte aqui</span>
           </div>
-          
+
           <p className="text-xs text-gray-500">
-            Arquivos OFX ou CSV até 10MB
+            Arquivos PDF, OFX ou CSV até 10MB
           </p>
         </div>
       </div>
