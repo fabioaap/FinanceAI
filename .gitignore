@@ -10,6 +10,7 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+*-dist
 *.local
 
 # Editor directories and files
@@ -23,5 +24,11 @@ dist-ssr
 *.sln
 *.sw?
 
-# Test coverage
-coverage
+.env
+**/agent-eval-report*
+packages
+pids
+.file-manifest
+.devcontainer/
+
+.spark-workbench-id

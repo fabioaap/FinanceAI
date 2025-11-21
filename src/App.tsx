@@ -1,242 +1,293 @@
-import { useState } from 'react';
-import { useTransactions, useCategories } from './hooks';
+import { useState } from 'react'
+import { useKV } from '@github/spark/hooks'
+import { Transaction, Bill, Goal } from '@/lib/types'
+import { SummaryCards } from '@/components/dashboard/SummaryCards'
+import { CategoryBreakdown } from '@/components/dashboard/CategoryBreakdown'
+import { UpcomingBills } from '@/components/dashboard/UpcomingBills'
+import { SavingsGoals } from '@/components/dashboard/SavingsGoals'
+import { AIInsights } from '@/components/dashboard/AIInsights'
+import { TransactionHistory } from '@/components/dashboard/TransactionHistory'
+import { AddTransactionModal } from '@/components/modals/AddTransactionModal'
+import { AddBillModal } from '@/components/modals/AddBillModal'
+import { AddGoalModal } from '@/components/modals/AddGoalModal'
+import { SettingsModal } from '@/components/modals/SettingsModal'
+import { ImportBankFileModal } from '@/components/modals/ImportBankFileModal'
+import { CategoryMappingModal } from '@/components/modals/CategoryMappingModal'
+import { Button } from '@/components/ui/button'
+import { Plus, CaretLeft, CaretRight, ClockCounterClockwise, House, Gear, Upload } from '@phosphor-icons/react'
+import { formatMonthYear, getMonthKey } from '@/lib/constants'
+import { Toaster } from '@/components/ui/sonner'
+import { toast } from 'sonner'
+import { Language, getTranslation } from '@/lib/i18n'
 
 function App() {
-  const [description, setDescription] = useState('');
-  const [amount, setAmount] = useState('');
-  const [categoryName, setCategoryName] = useState('');
-  
-  const { 
-    transactions, 
-    loading: transactionsLoading, 
-    createTransaction,
-    deleteTransaction,
-    getTotalByType 
-  } = useTransactions();
-  
-  const { 
-    categories, 
-    loading: categoriesLoading,
-    createCategory,
-    deleteCategory 
-  } = useCategories();
+  const [currentMonth, setCurrentMonth] = useState(new Date())
+  const monthKey = getMonthKey(currentMonth)
 
-  const [totalIncome, setTotalIncome] = useState(0);
-  const [totalExpense, setTotalExpense] = useState(0);
+  const [language, setLanguage] = useKV<Language>('app-language', 'en')
+  const t = getTranslation(language || 'en')
 
-  const handleCreateCategory = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!categoryName.trim()) return;
-    
-    try {
-      await createCategory({
-        name: categoryName,
-        type: 'expense',
-        color: '#' + Math.floor(Math.random()*16777215).toString(16),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-      setCategoryName('');
-    } catch (error) {
-      alert(error);
-    }
-  };
+  const [transactions, setTransactions] = useKV<Transaction[]>(`transactions-${monthKey}`, [])
+  const [bills, setBills] = useKV<Bill[]>('bills', [])
+  const [goals, setGoals] = useKV<Goal[]>('goals', [])
 
-  const handleCreateTransaction = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!description.trim() || !amount || categories.length === 0) return;
-    
-    try {
-      await createTransaction({
-        description,
-        amount: parseFloat(amount),
-        type: 'expense',
-        categoryId: categories[0].id!,
-        date: new Date(),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-      setDescription('');
-      setAmount('');
-      
-      // Update totals
-      const income = await getTotalByType('income');
-      const expense = await getTotalByType('expense');
-      setTotalIncome(income);
-      setTotalExpense(expense);
-    } catch (error) {
-      alert(error);
-    }
-  };
+  const [showAddTransaction, setShowAddTransaction] = useState(false)
+  const [showAddBill, setShowAddBill] = useState(false)
+  const [showAddGoal, setShowAddGoal] = useState(false)
+  const [showHistory, setShowHistory] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
+  const [showImportFile, setShowImportFile] = useState(false)
+  const [showCategoryMapping, setShowCategoryMapping] = useState(false)
 
-  if (transactionsLoading || categoriesLoading) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-xl">Carregando...</div>
-      </div>
-    );
+  const income = (transactions || [])
+    .filter((t) => t.type === 'income')
+    .reduce((sum, t) => sum + t.amount, 0)
+
+  const expenses = (transactions || [])
+    .filter((t) => t.type === 'expense')
+    .reduce((sum, t) => sum + t.amount, 0)
+
+  const balance = income - expenses
+
+  const handlePreviousMonth = () => {
+    setCurrentMonth((prev) => {
+      const newDate = new Date(prev)
+      newDate.setMonth(newDate.getMonth() - 1)
+      return newDate
+    })
+  }
+
+  const handleNextMonth = () => {
+    setCurrentMonth((prev) => {
+      const newDate = new Date(prev)
+      newDate.setMonth(newDate.getMonth() + 1)
+      return newDate
+    })
+  }
+
+  const handleAddTransaction = (transaction: Transaction) => {
+    setTransactions((current) => [...(current || []), transaction])
+  }
+
+  const handleAddBill = (bill: Bill) => {
+    setBills((current) => [...(current || []), bill])
+  }
+
+  const handleAddGoal = (goal: Goal) => {
+    setGoals((current) => [...(current || []), goal])
+  }
+
+  const handleToggleBillPaid = (billId: string) => {
+    setBills((current) =>
+      (current || []).map((bill) =>
+        bill.id === billId
+          ? { ...bill, status: bill.status === 'paid' ? 'pending' : 'paid' as const }
+          : bill
+      )
+    )
+  }
+
+  const handleDeleteTransaction = (transactionId: string) => {
+    setTransactions((current) =>
+      (current || []).filter((t) => t.id !== transactionId)
+    )
+    toast.success(t.transactions.deleted)
+  }
+
+  const handleLanguageChange = (newLanguage: Language) => {
+    setLanguage(newLanguage)
+    toast.success(
+      newLanguage === 'pt-BR'
+        ? 'Idioma alterado para Português (Brasil)'
+        : 'Language changed to English'
+    )
+  }
+
+  const handleImportComplete = (importedTransactions: Transaction[]) => {
+    setTransactions((current) => [...(current || []), ...importedTransactions])
+    toast.success(
+      language === 'pt-BR'
+        ? `${importedTransactions.length} transações importadas com sucesso!`
+        : `${importedTransactions.length} transactions imported successfully!`
+    )
+    setShowImportFile(false)
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <div className="max-w-6xl mx-auto">
-        <header className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Finance AI</h1>
-          <p className="text-gray-600">
-            Demonstração do Repository Pattern com Dexie e React Hooks
-          </p>
-        </header>
-        
-        <div className="grid gap-6 md:grid-cols-3 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-sm font-medium text-gray-500 mb-2">Total de Categorias</h3>
-            <p className="text-3xl font-bold text-gray-900">{categories.length}</p>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-sm font-medium text-gray-500 mb-2">Total de Transações</h3>
-            <p className="text-3xl font-bold text-gray-900">{transactions.length}</p>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-sm font-medium text-gray-500 mb-2">Saldo</h3>
-            <p className="text-3xl font-bold text-green-600">
-              R$ {(totalIncome - totalExpense).toFixed(2)}
-            </p>
-          </div>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4">Adicionar Categoria</h2>
-            <form onSubmit={handleCreateCategory} className="space-y-4">
-              <div>
-                <input
-                  type="text"
-                  value={categoryName}
-                  onChange={(e) => setCategoryName(e.target.value)}
-                  placeholder="Nome da categoria"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <button
-                type="submit"
-                className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition"
-              >
-                Adicionar Categoria
-              </button>
-            </form>
-
-            <div className="mt-4 space-y-2">
-              {categories.map((category) => (
-                <div 
-                  key={category.id} 
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    <div 
-                      className="w-4 h-4 rounded-full" 
-                      style={{ backgroundColor: category.color }}
-                    />
-                    <span className="font-medium">{category.name}</span>
-                  </div>
-                  <button
-                    onClick={() => deleteCategory(category.id!)}
-                    className="text-red-600 hover:text-red-800 text-sm"
-                  >
-                    Excluir
-                  </button>
-                </div>
-              ))}
-            </div>
+    <div className="min-h-screen bg-background">
+      <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8 space-y-6">
+        <header className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">{t.app.title}</h1>
+            <p className="text-muted-foreground">{t.app.subtitle}</p>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4">Adicionar Transação</h2>
-            <form onSubmit={handleCreateTransaction} className="space-y-4">
-              <div>
-                <input
-                  type="text"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Descrição"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  placeholder="Valor"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={categories.length === 0}
-                className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition disabled:bg-gray-400"
-              >
-                Adicionar Transação
-              </button>
-              {categories.length === 0 && (
-                <p className="text-sm text-gray-500">
-                  Crie uma categoria primeiro
-                </p>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setShowSettings(true)}
+            >
+              <Gear size={20} weight="bold" />
+            </Button>
+
+            <Button
+              variant="outline"
+              onClick={() => setShowImportFile(true)}
+              className="gap-2"
+            >
+              <Upload size={20} weight="bold" />
+              {t.navigation.import || (language === 'pt-BR' ? 'Importar Extrato' : 'Import Statement')}
+            </Button>
+
+            <Button
+              variant={showHistory ? "default" : "outline"}
+              onClick={() => setShowHistory(!showHistory)}
+              className="gap-2"
+            >
+              {showHistory ? (
+                <>
+                  <House size={20} weight="bold" />
+                  {t.navigation.dashboard}
+                </>
+              ) : (
+                <>
+                  <ClockCounterClockwise size={20} weight="bold" />
+                  {t.navigation.history}
+                </>
               )}
-            </form>
-
-            <div className="mt-4 space-y-2">
-              {transactions.map((transaction) => (
-                <div 
-                  key={transaction.id} 
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                >
-                  <div>
-                    <p className="font-medium">{transaction.description}</p>
-                    <p className="text-sm text-gray-500">
-                      {new Date(transaction.date).toLocaleDateString('pt-BR')}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="font-bold text-red-600">
-                      R$ {transaction.amount.toFixed(2)}
-                    </span>
-                    <button
-                      onClick={() => deleteTransaction(transaction.id!)}
-                      className="text-red-600 hover:text-red-800 text-sm"
-                    >
-                      Excluir
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+            </Button>
           </div>
-        </div>
+        </header>
 
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-blue-900 mb-2">
-            💡 Sobre esta implementação
-          </h3>
-          <p className="text-blue-800 mb-3">
-            Este aplicativo demonstra o <strong>Repository Pattern</strong> isolando completamente 
-            a lógica do Dexie (IndexedDB) dos componentes React através de:
-          </p>
-          <ul className="list-disc list-inside space-y-1 text-blue-800">
-            <li><strong>Repositories</strong>: Classes que encapsulam acesso aos dados</li>
-            <li><strong>Custom Hooks</strong>: useTransactions, useCategories, etc.</li>
-            <li><strong>Separação de Responsabilidades</strong>: UI não conhece Dexie</li>
-            <li><strong>Testabilidade</strong>: Fácil mockar em testes unitários</li>
-          </ul>
-          <p className="text-blue-800 mt-3">
-            Consulte <code className="bg-blue-100 px-2 py-1 rounded">REPOSITORY_PATTERN.md</code> para documentação completa.
-          </p>
-        </div>
+        {showHistory ? (
+          <TransactionHistory
+            transactions={transactions || []}
+            onDeleteTransaction={handleDeleteTransaction}
+            language={language || 'en'}
+            translations={t}
+          />
+        ) : (
+          <>
+            <div className="flex items-center justify-between bg-card rounded-lg p-4 border">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handlePreviousMonth}
+              >
+                <CaretLeft size={20} weight="bold" />
+              </Button>
+              <h2 className="text-2xl font-semibold">
+                {formatMonthYear(currentMonth, language || 'en')}
+              </h2>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleNextMonth}
+              >
+                <CaretRight size={20} weight="bold" />
+              </Button>
+            </div>
+
+            <SummaryCards
+              income={income}
+              expenses={expenses}
+              balance={balance}
+              language={language || 'en'}
+              translations={t}
+            />
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <CategoryBreakdown
+                transactions={transactions || []}
+                language={language || 'en'}
+                translations={t}
+              />
+              <AIInsights
+                transactions={transactions || []}
+                currentMonth={currentMonth}
+                language={language || 'en'}
+                translations={t}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <UpcomingBills
+                bills={bills || []}
+                onAddBill={() => setShowAddBill(true)}
+                onTogglePaid={handleToggleBillPaid}
+                language={language || 'en'}
+                translations={t}
+              />
+              <SavingsGoals
+                goals={goals || []}
+                onAddGoal={() => setShowAddGoal(true)}
+                language={language || 'en'}
+                translations={t}
+              />
+            </div>
+          </>
+        )}
+
+        <Button
+          size="lg"
+          className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg"
+          onClick={() => setShowAddTransaction(true)}
+        >
+          <Plus size={24} weight="bold" />
+        </Button>
       </div>
+
+      <AddTransactionModal
+        open={showAddTransaction}
+        onClose={() => setShowAddTransaction(false)}
+        onAdd={handleAddTransaction}
+        language={language || 'en'}
+        translations={t}
+      />
+
+      <AddBillModal
+        open={showAddBill}
+        onClose={() => setShowAddBill(false)}
+        onAdd={handleAddBill}
+        language={language || 'en'}
+        translations={t}
+      />
+
+      <AddGoalModal
+        open={showAddGoal}
+        onClose={() => setShowAddGoal(false)}
+        onAdd={handleAddGoal}
+        language={language || 'en'}
+        translations={t}
+      />
+
+      <SettingsModal
+        open={showSettings}
+        onClose={() => setShowSettings(false)}
+        language={language || 'en'}
+        onLanguageChange={handleLanguageChange}
+        onOpenCategoryMapping={() => {
+          setShowSettings(false)
+          setShowCategoryMapping(true)
+        }}
+        translations={t}
+      />
+
+      <ImportBankFileModal
+        open={showImportFile}
+        onOpenChange={setShowImportFile}
+        onImportComplete={handleImportComplete}
+      />
+
+      <CategoryMappingModal
+        open={showCategoryMapping}
+        onOpenChange={setShowCategoryMapping}
+      />
+
+      <Toaster />
     </div>
-  );
+  )
 }
 
-export default App;
+export default App

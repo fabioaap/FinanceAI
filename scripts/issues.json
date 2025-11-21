@@ -1,0 +1,128 @@
+[
+    {
+        "title": "Integrar ImportBankFileModal no App e persistir transações",
+        "body": "Integrar o componente `ImportBankFileModal` no `App.tsx`, adicionando o botão `Importar Extrato`, gestão de estado `showImportFile`, e a função `handleImportComplete` que persiste transações usando `useKV`/Dexie.\n\n**Critérios de aceite:**\n- Botão abre o modal e permite upload\n- Importação converte `ParsedTransaction` para `Transaction`\n- Transações inseridas aparecem na UI e persistem localmente\n- Teste manual com `docs/examples/*`\n\n**Arquivos relevantes:** `src/components/modals/ImportBankFileModal.tsx`, `src/App.tsx`, `src/hooks/use-db.ts`",
+        "labels": [
+            "in-progress",
+            "backend",
+            "feature"
+        ],
+        "assignees": [
+            "fabioaap"
+        ],
+        "estimate": "1h"
+    },
+    {
+        "title": "Adicionar testes unitários para bank-file-parser",
+        "body": "Criar testes unitários para `src/lib/bank-file-parser.ts` usando Vitest/Jest. Utilizar fixtures em `docs/examples` cobrindo:\n- CSV (vírgula e ponto-e-vírgula)\n- OFX (com e sem MEMO)\n- TXT com padrões variados\n- Casos de falha (datas/valores inválidos)\n\n**Critério de aceite:** cobertura >= 80% das rotinas principais",
+        "labels": [
+            "todo",
+            "tests"
+        ],
+        "assignees": [
+            "fabioaap"
+        ],
+        "estimate": "2-3h"
+    },
+    {
+        "title": "Criar testes E2E para fluxo de upload/importação",
+        "body": "Implementar testes E2E que verificam o fluxo completo: abrir modal, dropar arquivo, visualizar prévia, confirmar import e validar persistência local no UI. Ferramenta sugerida: Playwright (ou Cypress).\n\n**Critério de aceite:** testes automatizados rodando no pipeline",
+        "labels": [
+            "todo",
+            "e2e",
+            "tests"
+        ],
+        "assignees": [
+            "fabioaap"
+        ],
+        "estimate": "3-4h"
+    },
+    {
+        "title": "Detectar e prevenir transações duplicadas",
+        "body": "Implementar detecção de duplicatas usando hash (`date + amount + description`) antes de inserir; na UI exibir alert/checkbox para ignorar/mesclar duplicatas.\n\n**Critério de aceite:** não inserir duplicatas ao importar e opção de mesclagem disponível na preview",
+        "labels": [
+            "todo",
+            "backend",
+            "feature"
+        ],
+        "assignees": [
+            "fabioaap"
+        ],
+        "estimate": "3h"
+    },
+    {
+        "title": "Adicionar suporte a QIF no parser",
+        "body": "Adicionar `parseQIF()` e atualizar `BankFileFormat` para incluir QIF; adicionar testes e fixtures para QIF.\n\n**Critério de aceite:** arquivos QIF são parseados corretamente e cobertos por testes",
+        "labels": [
+            "todo",
+            "feature"
+        ],
+        "assignees": [
+            "fabioaap"
+        ],
+        "estimate": "2-3h"
+    },
+    {
+        "title": "Mapeamento de categorias customizável",
+        "body": "Criar UI para mapear descrições/palavras-chave para categorias e persistir regras no DB local (Dexie). Parser deve aplicar regras ao processar arquivos.\n\n**Critério de aceite:** usuário cria regra e parser aplica durante import",
+        "labels": [
+            "todo",
+            "ux",
+            "feature"
+        ],
+        "assignees": [
+            "fabioaap"
+        ],
+        "estimate": "4-5h"
+    },
+    {
+        "title": "Permitir múltiplos arquivos simultâneos no upload",
+        "body": "Ajustar componente de upload para aceitar múltiplos arquivos. UI deve mostrar progress por arquivo e por lote; tratar erros por arquivo.\n\n**Critério de aceite:** múltiplos arquivos são processados e o usuário tem feedback de progresso/erros",
+        "labels": [
+            "todo",
+            "ux",
+            "feature"
+        ],
+        "assignees": [
+            "fabioaap"
+        ],
+        "estimate": "4h"
+    },
+    {
+        "title": "Otimizar parser para arquivos grandes (>10k linhas)",
+        "body": "Refatorar parser para trabalhar por streaming, usando WebWorkers e parser incremental; criar benchmark e testes de desempenho.\n\n**Critério de aceite:** UI não trava com grandes arquivos e tempo de parse aceitável",
+        "labels": [
+            "future",
+            "perf"
+        ],
+        "assignees": [
+            "fabioaap"
+        ],
+        "estimate": "2-3d"
+    },
+    {
+        "title": "Integração com Sync Engine / armazenamento em nuvem",
+        "body": "Planejar e implementar integração com `Sync Engine` e armazenamento em nuvem; definir estratégia de conflict resolution e rollback.\n\n**Critério de aceite:** sincronização confiável com capacidade de rollback em conflitos documentada",
+        "labels": [
+            "future",
+            "infra"
+        ],
+        "assignees": [
+            "fabioaap"
+        ],
+        "estimate": "TBD"
+    },
+    {
+        "title": "Adicionar CI (lint, build, testes) para o repo",
+        "body": "Criar pipeline de GitHub Actions para executar lint, build, unit tests e E2E (playwright) em PRs e main. Incluir badge no README.\n\n**Critério de aceite:** pipeline está presente e falha em PRs quando algo está errado",
+        "labels": [
+            "todo",
+            "ci",
+            "infra"
+        ],
+        "assignees": [
+            "fabioaap"
+        ],
+        "estimate": "4h"
+    }
+]
