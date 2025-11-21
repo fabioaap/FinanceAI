@@ -2,8 +2,8 @@ import * as pdfjsLib from 'pdfjs-dist';
 import type { Transaction, ParseResult } from '../types';
 import { parseCSV } from './csvParser';
 
-// Configurar worker para pdfjs
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+// Configurar worker para pdfjs usando arquivo em public
+pdfjsLib.GlobalWorkerOptions.workerSrc = '/libs/pdf.worker.min.js';
 
 export async function parsePDF(file: File): Promise<ParseResult> {
     const errors: string[] = [];

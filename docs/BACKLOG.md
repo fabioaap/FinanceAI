@@ -18,6 +18,26 @@
 
 ---
 
+## 🧾 Status das Issues (GitHub) — Atualizado em 21/11/2025
+
+| Issue | Título | Status | Observações |
+|-------|--------|--------|-------------|
+| #33 | Integrar ImportBankFileModal no App | ✅ Concluído | Merge `1d287ed` |
+| #34 | Testes unitários para bank-file-parser | ✅ Concluído | Cobriu CSV/OFX |
+| #35 | Criar testes E2E para upload/importação | ✅ Concluído | Fluxo principal Playwright |
+| #36 | Detectar e prevenir transações duplicadas | ✅ Concluído | Deduplicação heurística |
+| #37 | Adicionar suporte a QIF no parser | ✅ Concluído | Parser `qifParser.ts` (branch main) |
+| #38 | Mapeamento de categorias customizável | ✅ Concluído | UI + persistência local |
+| #39 | Permitir múltiplos arquivos simultâneos | ✅ Concluído | Upload paralelo com limites |
+| #40 | Otimizar parser para arquivos grandes | 🔄 Planejado | Vide `docs/ISSUE_40_PERFORMANCE_PLAN.md` |
+| #41 | Integração com Sync Engine / nuvem | ⏳ Pendente | Vide `docs/ISSUE_41_SYNC_ENGINE_PLAN.md` |
+| #42 | Adicionar CI (lint, build, testes) | ✅ Concluído | Workflow Node 20 ativo |
+| #50 | Corrigir carregamento do worker PDF | 🟠 Aberta | Vide `docs/ISSUE_50_PDF_WORKER_PLAN.md` |
+
+> Fonte: scripts GitHub + revisão manual (20-21/11/2025).
+
+---
+
 ## ✅ v0.1 - Concluído (Parser + Upload)
 
 ### Core Features Implementadas
@@ -40,6 +60,22 @@
 - ⚠️ E2E tests: não implementados
 
 **Total entregue:** ~15-18 horas de desenvolvimento + 2h suporte PDF
+
+---
+
+## ⚠️ Issues Prioritárias
+
+1. **#40 - Performance de arquivos grandes**
+  - Meta: 100k linhas em <5s sem travar UI.
+  - Status: aguardando início (depende de conclusão da investigação de PDF para não mascarar métricas).
+
+2. **#41 - Sync Engine + Supabase**
+  - Meta: sincronizar múltiplos dispositivos com criptografia E2E.
+  - Status: pendente até finalização da performance (#40).
+
+3. **#50 - Worker do PDF (pdfjs-dist)**
+  - Meta: eliminar warning `fake worker failed` em dev/build.
+  - Plano técnico: `docs/ISSUE_43_PDF_WORKER_PLAN.md`.
 
 ---
 
@@ -228,6 +264,7 @@ Nov 2025 (ATUAL)       Dec 2025              Jan 2026              Fev 2026
 **Referências técnicas (main branch):**
 - `docs/ISSUE_40_PERFORMANCE_PLAN.md` - Plano: otimizar para 10k+ linhas
 - `docs/ISSUE_41_SYNC_ENGINE_PLAN.md` - Plano: Supabase + sync engine
+- `docs/ISSUE_50_PDF_WORKER_PLAN.md` - Plano: corrigir worker do pdf.js
 - `.github/agents/` - Instruções para agentes IA
 
 **PRD & Specs:**
@@ -289,6 +326,7 @@ ls examples/
 - ✅ TypeScript strict: segurança de tipos
 - ✅ ESLint configured: code quality
 - ✅ Tailwind configured: styling rápido
+- ⚠️ pdfjs-dist depende de worker dedicado → acompanhar Issue #50
 
 ### v0.2 - Adições Planejadas
 - Recharts para charts
