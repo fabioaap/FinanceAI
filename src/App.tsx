@@ -1,14 +1,66 @@
 import { useState } from 'react';
 import FileUploader from './components/FileUploader';
 import TransactionList from './components/TransactionList';
-import type { ParseResult } from './types';
+import { useTransactions } from './hooks';
+import type { ParseResult, Transaction } from './types';
 
 function App() {
   const [parseResult, setParseResult] = useState<ParseResult | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const { transactions: dbTransactions, addTransaction } = useTransactions();
 
   const handleParsed = (result: ParseResult) => {
     setParseResult(result);
+    setSaveMessage(null);
   };
+
+  const handleSaveToDatabase = async () => {
+    if (!parseResult?.transactions || parseResult.transactions.length === 0) {
+      return;
+    }
+
+    setIsSaving(true);
+    setSaveMessage(null);
+
+    try {
+      // Save each transaction to the database
+      for (const transaction of parseResult.transactions) {
+        await addTransaction({
+          date: transaction.date.toISOString(),
+          description: transaction.description,
+          amount: transaction.amount,
+          type: transaction.type,
+          balance: transaction.balance,
+        });
+      }
+
+      setSaveMessage({
+        type: 'success',
+        text: `${parseResult.transactions.length} transação${parseResult.transactions.length !== 1 ? 'ões' : ''} salva${parseResult.transactions.length !== 1 ? 's' : ''} com sucesso!`,
+      });
+
+      // Clear the parse result after saving
+      setParseResult(null);
+    } catch (error) {
+      setSaveMessage({
+        type: 'error',
+        text: error instanceof Error ? error.message : 'Erro ao salvar transações',
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Display all transactions from database if no parse result
+  const displayTransactions: Transaction[] = parseResult?.transactions || 
+    dbTransactions.map(t => ({
+      date: new Date(t.date),
+      description: t.description,
+      amount: t.amount,
+      type: t.type,
+      balance: t.balance,
+    }));
 
   return (
     <div className="min-h-screen bg-gray-100 py-8">
@@ -23,6 +75,22 @@ function App() {
         </div>
 
         <FileUploader onParsed={handleParsed} />
+
+        {saveMessage && (
+          <div className="mt-6 max-w-2xl mx-auto">
+            <div className={`${
+              saveMessage.type === 'success' 
+                ? 'bg-green-50 border-green-200' 
+                : 'bg-red-50 border-red-200'
+            } border rounded-md p-4`}>
+              <p className={`text-sm font-medium ${
+                saveMessage.type === 'success' ? 'text-green-800' : 'text-red-800'
+              }`}>
+                {saveMessage.text}
+              </p>
+            </div>
+          </div>
+        )}
 
         {parseResult?.errors && parseResult.errors.length > 0 && (
           <div className="mt-6 max-w-2xl mx-auto">
@@ -60,8 +128,32 @@ function App() {
           </div>
         )}
 
-        {parseResult?.transactions && (
-          <TransactionList transactions={parseResult.transactions} />
+        {parseResult?.transactions && parseResult.transactions.length > 0 && (
+          <div className="mt-6 max-w-2xl mx-auto flex justify-center">
+            <button
+              onClick={handleSaveToDatabase}
+              disabled={isSaving}
+              className={`px-6 py-2 rounded-md font-medium text-white ${
+                isSaving
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
+              }`}
+            >
+              {isSaving ? 'Salvando...' : 'Salvar Transações no Banco de Dados'}
+            </button>
+          </div>
+        )}
+
+        {displayTransactions.length > 0 && (
+          <TransactionList transactions={displayTransactions} />
+        )}
+
+        {!parseResult && dbTransactions.length > 0 && (
+          <div className="mt-4 text-center">
+            <p className="text-sm text-gray-600">
+              Exibindo {dbTransactions.length} transação{dbTransactions.length !== 1 ? 'ões' : ''} do banco de dados
+            </p>
+          </div>
         )}
       </div>
     </div>
