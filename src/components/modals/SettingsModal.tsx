@@ -3,13 +3,15 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Language, getLanguageName } from '@/lib/i18n'
-import { Globe } from '@phosphor-icons/react'
+import { Globe, Funnel } from '@phosphor-icons/react'
+import { Separator } from '@/components/ui/separator'
 
 interface SettingsModalProps {
   open: boolean
   onClose: () => void
   language: Language
   onLanguageChange: (language: Language) => void
+  onOpenCategoryMapping?: () => void
   translations: any
 }
 
@@ -18,6 +20,7 @@ export function SettingsModal({
   onClose,
   language,
   onLanguageChange,
+  onOpenCategoryMapping,
   translations,
 }: SettingsModalProps) {
   return (
@@ -50,6 +53,33 @@ export function SettingsModal({
               </SelectContent>
             </Select>
           </div>
+
+          {onOpenCategoryMapping && (
+            <>
+              <Separator />
+              <div className="space-y-3">
+                <div>
+                  <Label className="text-base font-semibold">
+                    {language === 'pt-BR' ? 'Mapeamento de Categorias' : 'Category Mapping'}
+                  </Label>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {language === 'pt-BR'
+                      ? 'Personalize como as transações são categorizadas automaticamente'
+                      : 'Customize how transactions are automatically categorized'
+                    }
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start gap-2"
+                  onClick={onOpenCategoryMapping}
+                >
+                  <Funnel size={18} weight="bold" />
+                  {language === 'pt-BR' ? 'Configurar Regras' : 'Configure Rules'}
+                </Button>
+              </div>
+            </>
+          )}
         </div>
 
         <div className="flex justify-end">

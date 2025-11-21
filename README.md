@@ -8,6 +8,18 @@ This template is your blank canvas. It comes with a minimal setup to help you ge
 - Pre-configured for local development
 - Ready to scale with your ideas
 This template implements the UI and local persistence wiring for a FinanceAI MVP, but lacks the full sync, OAuth and import features described in the project specification. See `docs/scan_spec_report.md` for a detailed mapping.
+
+📦 Como começar (instalar Dexie localmente)
+
+Para habilitar o banco local (Dexie) e rodar o projeto a partir do root do repositório, execute:
+
+```bash
+# instalar dependências do monorepo
+npm install
+
+# rodar no modo de desenvolvimento
+npm run dev
+```
   
 🧠 What Can You Do?
 

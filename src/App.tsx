@@ -11,8 +11,10 @@ import { AddTransactionModal } from '@/components/modals/AddTransactionModal'
 import { AddBillModal } from '@/components/modals/AddBillModal'
 import { AddGoalModal } from '@/components/modals/AddGoalModal'
 import { SettingsModal } from '@/components/modals/SettingsModal'
+import { ImportBankFileModal } from '@/components/modals/ImportBankFileModal'
+import { CategoryMappingModal } from '@/components/modals/CategoryMappingModal'
 import { Button } from '@/components/ui/button'
-import { Plus, CaretLeft, CaretRight, ClockCounterClockwise, House, Gear } from '@phosphor-icons/react'
+import { Plus, CaretLeft, CaretRight, ClockCounterClockwise, House, Gear, Upload } from '@phosphor-icons/react'
 import { formatMonthYear, getMonthKey } from '@/lib/constants'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
@@ -34,6 +36,8 @@ function App() {
   const [showAddGoal, setShowAddGoal] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
+  const [showImportFile, setShowImportFile] = useState(false)
+  const [showCategoryMapping, setShowCategoryMapping] = useState(false)
 
   const income = (transactions || [])
     .filter((t) => t.type === 'income')
@@ -93,10 +97,20 @@ function App() {
   const handleLanguageChange = (newLanguage: Language) => {
     setLanguage(newLanguage)
     toast.success(
-      newLanguage === 'pt-BR' 
-        ? 'Idioma alterado para Português (Brasil)' 
+      newLanguage === 'pt-BR'
+        ? 'Idioma alterado para Português (Brasil)'
         : 'Language changed to English'
     )
+  }
+
+  const handleImportComplete = (importedTransactions: Transaction[]) => {
+    setTransactions((current) => [...(current || []), ...importedTransactions])
+    toast.success(
+      language === 'pt-BR'
+        ? `${importedTransactions.length} transações importadas com sucesso!`
+        : `${importedTransactions.length} transactions imported successfully!`
+    )
+    setShowImportFile(false)
   }
 
   return (
@@ -107,7 +121,7 @@ function App() {
             <h1 className="text-3xl font-bold tracking-tight">{t.app.title}</h1>
             <p className="text-muted-foreground">{t.app.subtitle}</p>
           </div>
-          
+
           <div className="flex gap-2">
             <Button
               variant="outline"
@@ -116,7 +130,16 @@ function App() {
             >
               <Gear size={20} weight="bold" />
             </Button>
-            
+
+            <Button
+              variant="outline"
+              onClick={() => setShowImportFile(true)}
+              className="gap-2"
+            >
+              <Upload size={20} weight="bold" />
+              {t.navigation.import || (language === 'pt-BR' ? 'Importar Extrato' : 'Import Statement')}
+            </Button>
+
             <Button
               variant={showHistory ? "default" : "outline"}
               onClick={() => setShowHistory(!showHistory)}
@@ -138,8 +161,8 @@ function App() {
         </header>
 
         {showHistory ? (
-          <TransactionHistory 
-            transactions={transactions || []} 
+          <TransactionHistory
+            transactions={transactions || []}
             onDeleteTransaction={handleDeleteTransaction}
             language={language || 'en'}
             translations={t}
@@ -166,22 +189,22 @@ function App() {
               </Button>
             </div>
 
-            <SummaryCards 
-              income={income} 
-              expenses={expenses} 
+            <SummaryCards
+              income={income}
+              expenses={expenses}
               balance={balance}
               language={language || 'en'}
               translations={t}
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <CategoryBreakdown 
+              <CategoryBreakdown
                 transactions={transactions || []}
                 language={language || 'en'}
                 translations={t}
               />
-              <AIInsights 
-                transactions={transactions || []} 
+              <AIInsights
+                transactions={transactions || []}
                 currentMonth={currentMonth}
                 language={language || 'en'}
                 translations={t}
@@ -244,7 +267,22 @@ function App() {
         onClose={() => setShowSettings(false)}
         language={language || 'en'}
         onLanguageChange={handleLanguageChange}
+        onOpenCategoryMapping={() => {
+          setShowSettings(false)
+          setShowCategoryMapping(true)
+        }}
         translations={t}
+      />
+
+      <ImportBankFileModal
+        open={showImportFile}
+        onOpenChange={setShowImportFile}
+        onImportComplete={handleImportComplete}
+      />
+
+      <CategoryMappingModal
+        open={showCategoryMapping}
+        onOpenChange={setShowCategoryMapping}
       />
 
       <Toaster />

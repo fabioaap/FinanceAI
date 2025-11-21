@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { Transaction, CategoryType } from '@/lib/types'
+import { useTransactions } from '@/hooks/use-db'
 import { getCategoryInfo, formatCurrency, formatDate } from '@/lib/constants'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -22,13 +23,16 @@ type SortOption = 'date-desc' | 'date-asc' | 'amount-desc' | 'amount-asc'
 type FilterType = 'all' | 'income' | 'expense'
 
 export function TransactionHistory({ transactions, onDeleteTransaction, language, translations }: TransactionHistoryProps) {
+  // Hook-based fallback: if no transactions passed via props, use Dexie-backed hook
+  const txHook = useTransactions()
+  const effectiveTransactions = transactions && transactions.length > 0 ? transactions : txHook.transactions
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState<FilterType>('all')
   const [sortBy, setSortBy] = useState<SortOption>('date-desc')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
 
   const filteredAndSortedTransactions = useMemo(() => {
-    let filtered = transactions
+    let filtered = effectiveTransactions
 
     if (filterType !== 'all') {
       filtered = filtered.filter(t => t.type === filterType)
@@ -62,11 +66,11 @@ export function TransactionHistory({ transactions, onDeleteTransaction, language
     return sorted
   }, [transactions, filterType, sortBy, selectedCategory, searchTerm])
 
-  const totalIncome = transactions
+  const totalIncome = effectiveTransactions
     .filter(t => t.type === 'income')
     .reduce((sum, t) => sum + t.amount, 0)
 
-  const totalExpense = transactions
+  const totalExpense = effectiveTransactions
     .filter(t => t.type === 'expense')
     .reduce((sum, t) => sum + t.amount, 0)
 
@@ -245,8 +249,8 @@ export function TransactionHistory({ transactions, onDeleteTransaction, language
         {filteredAndSortedTransactions.length > 0 && (
           <div className="pt-4 border-t text-center text-sm text-muted-foreground">
             {language === 'pt-BR' 
-              ? `Mostrando ${filteredAndSortedTransactions.length} de ${transactions.length} transações`
-              : `Showing ${filteredAndSortedTransactions.length} of ${transactions.length} transactions`
+              ? `Mostrando ${filteredAndSortedTransactions.length} de ${effectiveTransactions.length} transações`
+              : `Showing ${filteredAndSortedTransactions.length} of ${effectiveTransactions.length} transactions`
             }
           </div>
         )}
