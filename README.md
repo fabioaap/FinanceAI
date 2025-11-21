@@ -18,6 +18,7 @@ Aplicação web para importação e visualização de extratos bancários nos fo
 - **TypeScript** - Type safety
 - **Vite** - Build tool e dev server
 - **Tailwind CSS** - Estilização
+- **Dexie.js** - IndexedDB wrapper para armazenamento local
 - **fast-xml-parser** - Parser OFX
 - **PapaParse** - Parser CSV
 - **ESLint** - Linting
@@ -86,6 +87,35 @@ Na pasta `examples/` você encontrará arquivos de exemplo para testar a aplica�
 
 Use estes arquivos para testar a funcionalidade de importação.
 
+## 💾 Armazenamento Local (Dexie/IndexedDB)
+
+A aplicação utiliza **Dexie.js** para persistência local de dados no navegador através de IndexedDB.
+
+### Banco de Dados
+
+- **Nome:** `financeai-db`
+- **Tabelas:** Transactions, Bills, Goals, Categories, Settings
+- **Documentação completa:** Ver `docs/db_schema.md`
+
+### Como Usar
+
+```typescript
+// Importar hooks reativos
+import { useTransactions, useCategories } from '@/hooks';
+
+function MyComponent() {
+  const { transactions, addTransaction } = useTransactions();
+  // transactions é atualizado automaticamente quando o DB muda
+}
+```
+
+### Inspecionar Dados
+
+Você pode visualizar os dados armazenados usando DevTools do navegador:
+1. Abra DevTools (F12)
+2. Vá para **Application** > **IndexedDB**
+3. Expanda `financeai-db`
+
 ## 📝 Scripts Disponíveis
 
 | Script | Descrição |
@@ -144,14 +174,29 @@ Os workflows são executados automaticamente em:
 FinanceAI/
 ├── .github/
 │   └── workflows/
-│       └── ci.yml           # Configuração GitHub Actions
+│       └── ci.yml              # Configuração GitHub Actions
+├── docs/
+│   ├── db_schema.md           # Documentação do schema Dexie
+│   └── ...                     # Outros documentos
 ├── src/
 │   ├── components/
 │   │   ├── FileUploader.tsx    # Componente de upload
 │   │   └── TransactionList.tsx # Lista de transações
+│   ├── hooks/
+│   │   ├── useTransactions.ts  # Hook para transações
+│   │   ├── useCategories.ts    # Hook para categorias
+│   │   ├── useBills.ts         # Hook para contas
+│   │   ├── useGoals.ts         # Hook para metas
+│   │   └── useSettings.ts      # Hook para configurações
+│   ├── lib/
+│   │   └── db/
+│   │       ├── schema.ts       # Schema Dexie
+│   │       ├── repositories.ts # Repositórios de dados
+│   │       └── index.ts        # Exportações centralizadas
 │   ├── parsers/
 │   │   ├── ofxParser.ts        # Parser OFX
-│   │   └── csvParser.ts        # Parser CSV
+│   │   ├── csvParser.ts        # Parser CSV
+│   │   └── pdfParser.ts        # Parser PDF
 │   ├── types/
 │   │   └── index.ts            # Definições TypeScript
 │   ├── utils/
