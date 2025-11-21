@@ -75,28 +75,46 @@ echo ""
 echo "⏳ Aguardando GitHub Actions checks..."
 gh pr checks "$PR_NUMBER" --watch || echo "⚠️  Alguns checks falharam ou ainda não rodaram"
 
-# 5. Perguntar antes de mergear
+# 5. Verificar status dos checks antes de mergear
+echo ""
+echo "🔍 Verificando status dos checks..."
+CHECK_STATUS=$(gh pr checks "$PR_NUMBER" --json state --jq '.[].state' | grep -v "SUCCESS" | wc -l)
+if [ "$CHECK_STATUS" -gt 0 ]; then
+    echo "⚠️  Alguns checks não passaram ou estão pendentes."
+    echo "Execute: gh pr checks $PR_NUMBER --watch"
+    read -p "🤔 Deseja continuar mesmo assim? (y/N): " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "⏸️  Merge cancelado. Aguarde os checks passarem."
+        exit 0
+    fi
+fi
+
+# 6. Perguntar antes de mergear
 echo ""
 read -p "🤔 Deseja mergear o PR #$PR_NUMBER agora? (y/N): " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo "🔀 Mergeando PR #$PR_NUMBER..."
-    gh pr merge "$PR_NUMBER" --squash --delete-branch --auto
+    gh pr merge "$PR_NUMBER" --squash --delete-branch
     echo "✅ PR mergeado com sucesso!"
+    
+    # Obter hash do merge commit
+    MERGE_COMMIT=$(gh pr view "$PR_NUMBER" --json mergeCommit --jq '.mergeCommit.oid' | cut -c1-7)
+    
+    # 7. Adicionar comentário de fechamento nas issues
+    echo ""
+    echo "📝 Adicionando comentários nas issues..."
+    for ISSUE_NUM in "${ISSUES[@]}"; do
+        gh issue comment "$ISSUE_NUM" --body "✅ Resolvido no PR #$PR_NUMBER (commit $MERGE_COMMIT)"
+        echo "  ✅ Issue #$ISSUE_NUM comentada"
+    done
 else
     echo "⏸️  Merge cancelado. Execute manualmente: gh pr merge $PR_NUMBER --squash --delete-branch"
     exit 0
 fi
 
-# 6. Adicionar comentário de fechamento nas issues
-echo ""
-echo "📝 Adicionando comentários nas issues..."
-for ISSUE_NUM in "${ISSUES[@]}"; do
-    gh issue comment "$ISSUE_NUM" --body "✅ Resolvido no PR #$PR_NUMBER (commit $(git rev-parse --short HEAD))"
-    echo "  ✅ Issue #$ISSUE_NUM comentada"
-done
-
-# 7. Instruções para mover no Project Board
+# 8. Instruções para mover no Project Board
 echo ""
 echo "✅ Processo concluído!"
 echo ""
