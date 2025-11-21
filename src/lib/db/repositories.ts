@@ -77,6 +77,8 @@ export const billRepository = {
   },
 
   async getUnpaid(): Promise<Bill[]> {
+    // Note: Dexie stores booleans as 0/1 in IndexedDB
+    // Using 0 for false is correct for querying
     return db.bills.where('isPaid').equals(0).toArray();
   },
 

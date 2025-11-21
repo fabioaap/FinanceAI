@@ -49,7 +49,7 @@ class SyncEngine {
   private isEnabled: boolean = false;
   private isSyncing: boolean = false;
   private syncInterval: number = 300000; // 5 minutes
-  private intervalId: number | null = null;
+  private intervalId: ReturnType<typeof setInterval> | null = null;
   private retryAttempts: Map<string, number> = new Map();
   private maxRetries = 3;
   private listeners: Set<(status: SyncStatus) => void> = new Set();
@@ -120,9 +120,9 @@ class SyncEngine {
     this.sync();
 
     // Then sync at regular intervals
-    this.intervalId = window.setInterval(() => {
+    this.intervalId = setInterval(() => {
       this.sync();
-    }, this.syncInterval) as unknown as number;
+    }, this.syncInterval);
 
     this.notifyListeners();
   }
@@ -304,6 +304,7 @@ class SyncEngine {
       await operation();
       this.retryAttempts.delete(key); // Success, clear retry count
     } catch {
+      // Retry with backoff on any error
       this.retryAttempts.set(key, attempts + 1);
       
       // Exponential backoff: 2^attempts seconds
