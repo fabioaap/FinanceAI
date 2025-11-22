@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { Transaction, Bill, Goal } from '@/lib/types'
+import { useAppTransactions } from '@/hooks/useAppTransactions'
 import { SummaryCards } from '@/components/dashboard/SummaryCards'
 import { CategoryBreakdown } from '@/components/dashboard/CategoryBreakdown'
 import { UpcomingBills } from '@/components/dashboard/UpcomingBills'
@@ -27,7 +28,10 @@ function App() {
   const [language, setLanguage] = useKV<Language>('app-language', 'en')
   const t = getTranslation(language || 'en')
 
-  const [transactions, setTransactions] = useKV<Transaction[]>(`transactions-${monthKey}`, [])
+  // 🔄 MIGRATED: Agora usa Dexie via hook adaptador
+  const { transactions, loading, addTransaction, removeTransaction } = useAppTransactions(monthKey)
+  
+  // 📌 TODO: Migrar bills e goals para Dexie futuramente
   const [bills, setBills] = useKV<Bill[]>('bills', [])
   const [goals, setGoals] = useKV<Goal[]>('goals', [])
 
@@ -65,8 +69,17 @@ function App() {
     })
   }
 
-  const handleAddTransaction = (transaction: Transaction) => {
-    setTransactions((current) => [...(current || []), transaction])
+  const handleAddTransaction = async (transaction: Transaction) => {
+    try {
+      await addTransaction(transaction)
+      toast.success(t.transactions.added)
+    } catch (error) {
+      toast.error(
+        language === 'pt-BR'
+          ? 'Erro ao adicionar transação'
+          : 'Failed to add transaction'
+      )
+    }
   }
 
   const handleAddBill = (bill: Bill) => {
@@ -87,11 +100,17 @@ function App() {
     )
   }
 
-  const handleDeleteTransaction = (transactionId: string) => {
-    setTransactions((current) =>
-      (current || []).filter((t) => t.id !== transactionId)
-    )
-    toast.success(t.transactions.deleted)
+  const handleDeleteTransaction = async (transactionId: string) => {
+    try {
+      await removeTransaction(transactionId)
+      toast.success(t.transactions.deleted)
+    } catch (error) {
+      toast.error(
+        language === 'pt-BR'
+          ? 'Erro ao excluir transação'
+          : 'Failed to delete transaction'
+      )
+    }
   }
 
   const handleLanguageChange = (newLanguage: Language) => {
@@ -103,14 +122,39 @@ function App() {
     )
   }
 
-  const handleImportComplete = (importedTransactions: Transaction[]) => {
-    setTransactions((current) => [...(current || []), ...importedTransactions])
-    toast.success(
-      language === 'pt-BR'
-        ? `${importedTransactions.length} transações importadas com sucesso!`
-        : `${importedTransactions.length} transactions imported successfully!`
+  const handleImportComplete = async (importedTransactions: Transaction[]) => {
+    try {
+      // Adiciona todas as transações importadas via Dexie
+      for (const transaction of importedTransactions) {
+        await addTransaction(transaction)
+      }
+      toast.success(
+        language === 'pt-BR'
+          ? `${importedTransactions.length} transações importadas com sucesso!`
+          : `${importedTransactions.length} transactions imported successfully!`
+      )
+      setShowImportFile(false)
+    } catch (error) {
+      toast.error(
+        language === 'pt-BR'
+          ? 'Erro ao importar transações'
+          : 'Failed to import transactions'
+      )
+    }
+  }
+
+  // Loading state durante carregamento inicial do Dexie
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">
+            {language === 'pt-BR' ? 'Carregando...' : 'Loading...'}
+          </p>
+        </div>
+      </div>
     )
-    setShowImportFile(false)
   }
 
   return (
