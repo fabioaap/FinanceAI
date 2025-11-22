@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { Transaction, Bill, Goal } from '@/lib/types'
-import { useAppTransactions } from '@/hooks/useAppTransactions'
+import { useAppTransactions, useBillsAdapter } from '@/hooks'
 import { SummaryCards } from '@/components/dashboard/SummaryCards'
 import { CategoryBreakdown } from '@/components/dashboard/CategoryBreakdown'
 import { UpcomingBills } from '@/components/dashboard/UpcomingBills'
@@ -31,8 +31,10 @@ function App() {
   // 🔄 MIGRATED: Agora usa Dexie via hook adaptador
   const { transactions, loading, addTransaction, removeTransaction } = useAppTransactions(monthKey)
   
-  // 📌 TODO: Migrar bills e goals para Dexie futuramente
-  const [bills, setBills] = useKV<Bill[]>('bills', [])
+  // 🔄 MIGRATED: Bills agora usa localStorage via hook adaptador
+  const { bills, addBill, removeBill, updateBill } = useBillsAdapter()
+  
+  // 📌 TODO: Migrar goals para Dexie futuramente
   const [goals, setGoals] = useKV<Goal[]>('goals', [])
 
   const [showAddTransaction, setShowAddTransaction] = useState(false)
@@ -82,22 +84,47 @@ function App() {
     }
   }
 
-  const handleAddBill = (bill: Bill) => {
-    setBills((current) => [...(current || []), bill])
+  const handleAddBill = async (bill: Bill) => {
+    try {
+      await addBill(bill)
+      toast.success(
+        language === 'pt-BR'
+          ? 'Conta adicionada com sucesso'
+          : 'Bill added successfully'
+      )
+    } catch (error) {
+      toast.error(
+        language === 'pt-BR'
+          ? 'Erro ao adicionar conta'
+          : 'Failed to add bill'
+      )
+    }
   }
 
   const handleAddGoal = (goal: Goal) => {
     setGoals((current) => [...(current || []), goal])
   }
 
-  const handleToggleBillPaid = (billId: string) => {
-    setBills((current) =>
-      (current || []).map((bill) =>
-        bill.id === billId
-          ? { ...bill, status: bill.status === 'paid' ? 'pending' : 'paid' as const }
-          : bill
+  const handleToggleBillPaid = async (billId: string) => {
+    try {
+      const bill = bills.find(b => b.id === billId)
+      if (bill) {
+        await updateBill(billId, {
+          status: bill.status === 'paid' ? 'pending' : 'paid'
+        })
+        toast.success(
+          language === 'pt-BR'
+            ? 'Status da conta atualizado'
+            : 'Bill status updated'
+        )
+      }
+    } catch (error) {
+      toast.error(
+        language === 'pt-BR'
+          ? 'Erro ao atualizar conta'
+          : 'Failed to update bill'
       )
-    )
+    }
   }
 
   const handleDeleteTransaction = async (transactionId: string) => {
