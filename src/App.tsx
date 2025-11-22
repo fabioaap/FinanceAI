@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { Transaction, Bill, Goal } from '@/lib/types'
-import { useAppTransactions, useBillsAdapter } from '@/hooks'
+import { useAppTransactions, useBillsAdapter, useGoalsAdapter } from '@/hooks'
 import { SummaryCards } from '@/components/dashboard/SummaryCards'
 import { CategoryBreakdown } from '@/components/dashboard/CategoryBreakdown'
 import { UpcomingBills } from '@/components/dashboard/UpcomingBills'
@@ -34,8 +34,8 @@ function App() {
   // 🔄 MIGRATED: Bills agora usa localStorage via hook adaptador
   const { bills, addBill, removeBill, updateBill } = useBillsAdapter()
   
-  // 📌 TODO: Migrar goals para Dexie futuramente
-  const [goals, setGoals] = useKV<Goal[]>('goals', [])
+  // 🔄 MIGRATED: Goals agora usa localStorage via hook adaptador
+  const { goals, addGoal, removeGoal, updateGoal } = useGoalsAdapter()
 
   const [showAddTransaction, setShowAddTransaction] = useState(false)
   const [showAddBill, setShowAddBill] = useState(false)
@@ -101,8 +101,21 @@ function App() {
     }
   }
 
-  const handleAddGoal = (goal: Goal) => {
-    setGoals((current) => [...(current || []), goal])
+  const handleAddGoal = async (goal: Goal) => {
+    try {
+      await addGoal(goal)
+      toast.success(
+        language === 'pt-BR'
+          ? 'Meta adicionada com sucesso'
+          : 'Goal added successfully'
+      )
+    } catch (error) {
+      toast.error(
+        language === 'pt-BR'
+          ? 'Erro ao adicionar meta'
+          : 'Failed to add goal'
+      )
+    }
   }
 
   const handleToggleBillPaid = async (billId: string) => {
