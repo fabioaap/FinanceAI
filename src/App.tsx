@@ -1,5 +1,4 @@
-import { useState } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useState, useEffect } from 'react'
 import { Transaction, Bill, Goal } from '@/lib/types'
 import { useAppTransactions, useBillsAdapter, useGoalsAdapter } from '@/hooks'
 import { SummaryCards } from '@/components/dashboard/SummaryCards'
@@ -25,7 +24,17 @@ function App() {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const monthKey = getMonthKey(currentMonth)
 
-  const [language, setLanguage] = useKV<Language>('app-language', 'en')
+  // 🔄 MIGRATED: Language agora usa localStorage diretamente
+  const [language, setLanguage] = useState<Language>(() => {
+    const stored = localStorage.getItem('app-language')
+    return (stored as Language) || 'en'
+  })
+
+  // Persiste idioma no localStorage quando mudar
+  useEffect(() => {
+    localStorage.setItem('app-language', language)
+  }, [language])
+
   const t = getTranslation(language || 'en')
 
   // 🔄 MIGRATED: Agora usa Dexie via hook adaptador
