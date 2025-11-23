@@ -1,10 +1,10 @@
 # BACKLOG - FinanceAI
 
-Status atualizado: 22/11/2025 | Plano de ação estruturado para Issue #53 em execução
+Status atualizado: 23/11/2025 | PR #53 COMPLETA (pronta para merge) | Issues #40/#41 em discovery
 
 ---
 
-## ✅ Done (8/11)
+## ✅ Done (9/11)
 
 - [Issue #33] Integrar ImportBankFileModal ao App.tsx
 - [Issue #34] Testes unitários para bank-file-parser (28 testes, 100% coverage)
@@ -14,94 +14,108 @@ Status atualizado: 22/11/2025 | Plano de ação estruturado para Issue #53 em ex
 - [Issue #38] Mapeamento de categorias customizável
 - [Issue #39] Upload de múltiplos arquivos simultâneos
 - [Issue #42] Pipeline CI (lint, build, tests, coverage)
+- [Issue #53] Remover Spark Framework, migrar para Dexie + localStorage ✨
 
 ---
 
-## 🔄 In Progress (1/11)
+## 🔄 In Discovery (2/11)
 
-### Issue #53 – Remover Spark Framework e consolidar Dexie
+### Issue #40 – Otimizar parser para arquivos grandes (Web Worker)
 
-**Plano estruturado (1-2 dias):**
+**Status:** 🚀 Em execução (delegado ao agente de nuvem)  
+**Estimativa:** 2-3 dias  
+**Branch esperado:** `copilot/add-web-worker-for-parser`
 
-1. **Expandir schema Dexie**
-   - Arquivo: `src/database/db.ts`, `src/lib/types.ts`
-   - Adicionar tabelas: `bills`, `goals`, `settings`
-   - Índices apropriados para queries eficientes
+**Scope:**
+- Arquivo: `src/lib/bank-file-parser-worker.ts`
+- Implementar Worker para parsing assíncrono
+- Suportar arquivos >10k linhas sem travar UI
+- Teste com arquivo 50k+ linhas real (banco)
+- Benchmark: antes/depois de performance
 
-2. **Criar hooks definitivos**
-   - `src/hooks/useBills.ts` – CRUD completo, ordenação by dueDate
-   - `src/hooks/useGoals.ts` – CRUD + atualização progresso
-   - `src/hooks/useAppLanguage.ts` – gerenciar settings (key `app-language`)
-   - Cada hook: loading/error states, useEffect, useCallback, error handling
-   - Testes Vitest para cada hook
+**Critérios de sucesso:**
+- ✅ Parser em Web Worker (transferência via postMessage)
+- ✅ UI responsiva durante import grande
+- ✅ Fallback para main thread se Worker indisponível
+- ✅ Testes E2E com arquivo 50k linhas
+- ✅ Documentação em docs/
 
-3. **Atualizar App.tsx**
-   - Remover `useBillsAdapter`, `useGoalsAdapter`
-   - Importar e usar novos hooks `useBills`, `useGoals`, `useAppLanguage`
-   - Handlers async/await com toasts para sucesso/erro
+### Issue #41 – Cloud Sync Engine + Conflict Resolution
 
-4. **Script de migração**
-   - Arquivo: `src/lib/migrate-local-storage.ts`
-   - Ler chaves antigas: `transactions-YYYY-MM`, `bills`, `goals`, `app-language`
-   - Converter para formatos Dexie e gravar em `db.*`
-   - Remover dados antigos após sucesso
-   - Flag `sessionStorage` (`spark-migration-done`) para idempotência
-   - Integrar em `App.tsx` via `useEffect` global
+**Status:** 💬 Discovery (requisitos backend a definir)  
+**Estimativa:** TBD  
+**Prioridade:** Depois de #40 completo
 
-5. **Testes**
-   - `npm run lint` → zero erros
-   - `npm run build` → sucesso
-   - `npm test` → unit tests dos novos hooks
-   - `npm run test:e2e` → fluxos E2E
-   - Verificar IndexedDB manual (DevTools: Application → IndexedDB → FinanceAI)
+**Scope:**
+- Sincronização local → servidor remoto
+- Conflict resolution (último write wins / merge 3-way)
+- Offline-first com fila de sincronização
+- Requer backend (NestJS + PostgreSQL)
 
-6. **Documentação**
-   - `docs/MIGRATION_SPARK_TO_DEXIE.md` – detalhes completos + testes
-   - `docs/BREAKING_CHANGES.md` – APIs novas (hooks Dexie, IDs numéricos, async)
-   - `docs/STATUS_BACKLOG.md`, `docs/BACKLOG.md` – atualizar com conclusão e métricas
-
-7. **Git**
-   - Commits lógicos com mensagens claras
-   - Branch: `copilot/remove-spark-and-migrate-to-dexie`
-   - PR #53 atualizada e pronta para merge
+**Bloqueadores:**
+- ⏳ Definir especificação de API (REST/GraphQL)
+- ⏳ Implementar backend de sincronização
+- ⏳ Escolher estratégia de versionamento (CRDT/timestamp)
 
 ---
 
-## 📝 To Do (Próximas prioridades)
+## 📋 Próximos Passos (Bloqueadores)
 
-### Script de migração (fallback/helper)
-- Arquivo: `src/scripts/migrate-spark-data.ts` (alternativo)
-- Exportar função reutilizável para suporte manual se necessário
-- Documentar em `docs/MIGRATION_GUIDE.md`
+### Issue #53 – Finalizar (antes de mergear)
+- [ ] **Code review** de PR #53 (revisar 13 commits)
+- [ ] **Testes manuais** no browser (bills, goals, language)
+- [ ] **Validação IndexedDB** (DevTools → Application → IndexedDB → FinanceAI)
+- [ ] **Merge para main** (merge --no-ff + push)
+- [ ] **Notificar breaking changes** (Transaction IDs são numbers agora)
 
-### Issue #40 – Otimizar parser para arquivos grandes
-- **Status:** ⏳ Planejamento
-- **Scope:** Web Worker + streaming para >10k linhas
-- **Estimativa:** 2-3 dias após Issue #53
+### Issue #40 – Em Execução
+- Branch: `copilot/add-web-worker-for-parser`
+- Delegado ao agente de nuvem
+- Acompanhar PR relacionada
 
-### Issue #41 – Sync Engine / nuvem
-- **Status:** ⏳ Discovery
-- **Scope:** Arquitetura de sincronização + conflict resolution
-- **Estimativa:** TBD (depende de infra)
+### Issue #41 – Aguardando Discovery
+- Definir requisitos backend (API spec)
+- Escolher plataforma sync (Firebase, custom server, etc)
+- Estimar esforço (depende arquitetura)
 
 ---
 
-## 🎯 Critérios de sucesso Issue #53
+## 🏁 Checklist Final Issue #53 (Pré-merge)
 
 - ✅ Nenhuma referência ao Spark/useKV em `src/`
-- ✅ Bills/goals/idioma 100% em Dexie
-- ✅ Script migração automático
-- ✅ Testes: lint, build, test, test:e2e → todos green
-- ✅ Documentação atualizada
-- ✅ PR #53 → merge
+- ✅ Bills/goals em localStorage adapters (Dexie pronto futuro)
+- ✅ Transações em Dexie (IndexedDB)
+- ✅ Testes: lint, build, test → green
+- ✅ Documentação: MIGRATION_*.md + BREAKING_CHANGES.md ✨
+- ⏳ **Code review + manual testing** (falta fazer)
+- ⏳ **Merge para main** (então iniciar #40)
 
 ---
 
-## 📌 Notas
+## 📌 Arquitetura Atual (Pós PR #53)
 
-- **Adapters temporários** (useBillsAdapter, useGoalsAdapter) serão removidos após Dexie estar pronto
-- **Fake IndexedDB** já configurado em `test/setup.ts`
-- **Mock/testing:** usar fake-indexeddb para unit tests
-- **Performance:** não é bloqueador agora; Issue #40 cobrirá optimizações
+**Persistência:**
+- `Transações` → Dexie (IndexedDB) com schema + Índices
+- `Bills` → localStorage (chave: `financeai-bills`)
+- `Goals` → localStorage (chave: `financeai-goals`)
+- `Language` → localStorage (chave: `app-language`)
+- `Category Rules` → localStorage (chave: `category-rules`)
+
+**Hooks:**
+- `useAppTransactions` → adapter bidirecional Dexie
+- `useBillsAdapter` → CRUD localStorage (async)
+- `useGoalsAdapter` → CRUD localStorage (async)
+- Cada hook com error handling + toasts
+
+**Testes:**
+- Vitest + fake-indexeddb configurado (`test/setup.ts`)
+- 20/28 testes passing (8 falhas pré-existentes)
+- E2E Playwright para fluxos críticos
+
+**Performance:**
+- Indexação Dexie pronta (IDs, dates, categories)
+- Issue #40 cobrirá otimizações de parsing (Web Worker)
+
+**Próximo passo:** Merge #53 → Iniciar #40 (Web Worker)
 
 ---
