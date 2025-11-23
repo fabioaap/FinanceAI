@@ -12,7 +12,7 @@
 
 ---
 
-## ✅ Issues Concluídas (8/11)
+## ✅ Issues Concluídas (9/11)
 
 ### Issue #33: Integrar ImportBankFileModal no App ✅
 **Status:** ✅ CONCLUÍDO  
@@ -177,26 +177,52 @@
 
 ---
 
-## 🔄 Issues em Progresso (1/11)
-
-### Issue #53: Remover Spark Framework e migrar estado para Dexie/localStorage
-**Status:** 🔄 EM ANDAMENTO  
+### Issue #53: Remover Spark Framework e migrar estado para Dexie ✅
+**Status:** ✅ CONCLUÍDO  
 **GitHub / PR:** https://github.com/fabioaap/FinanceAI/pull/53  
-**Branch:** `copilot/create-data-abstraction-layer`  
-**Resumo:**
-- ✅ Spark removido de `App.tsx`, `vite.config.ts` e `package.json`
-- ✅ `useAppTransactions`, `useBillsAdapter`, `useGoalsAdapter` e persistência de idioma via localStorage implementados
-- ✅ Transactions já persistem em Dexie; bills/goals continuam temporariamente em localStorage (adapters)
-- ✅ App roda sem erros 401 e sem dependências do Spark
-- ⏳ Pendente: mover bills/goals/settings para tabelas Dexie definitivas, adicionar testes dos novos hooks e atualizar documentação final
+**Branch:** `copilot/create-dexie-hooks-and-migration-script`  
 
-**Checklist restante:**
-- [ ] Criar tabelas Dexie `bills`, `goals`, `settings`
-- [ ] Implementar hooks definitivos (`useBills`, `useGoals`, `useAppLanguage`)
-- [ ] Atualizar App para usar os novos hooks Dexie
-- [ ] Consolidar documentação (Breaking Changes + Migration Guide)
+**Implementação:**
+- ✅ Tabelas Dexie criadas: `bills`, `goals`, `settings` (database v2)
+- ✅ Repositories implementados: `BillRepository`, `GoalRepository`, `SettingsRepository`
+- ✅ Hooks Dexie criados: `useBills`, `useGoals`, `useAppLanguage`
+- ✅ Script de migração automática: `migrate-to-dexie.ts`
+- ✅ App.tsx atualizado para usar hooks Dexie
+- ✅ Migração automática executa na primeira carga
+- ✅ Testes unitários: 18/18 passando (BillRepository, GoalRepository, SettingsRepository)
+- ✅ Build e lint: sem erros
+
+**Arquivos criados:**
+- `src/repositories/BillRepository.ts` + `.test.ts`
+- `src/repositories/GoalRepository.ts` + `.test.ts`
+- `src/repositories/SettingsRepository.ts` + `.test.ts`
+- `src/hooks/useBills.ts`
+- `src/hooks/useGoals.ts`
+- `src/hooks/useAppLanguage.ts`
+- `src/scripts/migrate-to-dexie.ts`
+
+**Arquivos modificados:**
+- `src/database/db.ts` - Adicionado schema v2 com novas tabelas
+- `src/types/index.ts` - Adicionados tipos Bill, Goal, Settings
+- `src/App.tsx` - Substituídos adapters por hooks Dexie + integração de migração
+- `src/hooks/index.ts` - Exportados novos hooks
+- `src/repositories/index.ts` - Exportados novos repositories
+
+**Storage definitivo:**
+```
+Dexie (IndexedDB) - FinanceAI Database v2
+├── transactions: Transaction[]
+├── categories: Category[]
+├── budgets: Budget[]
+├── accounts: Account[]
+├── bills: Bill[]
+├── goals: Goal[]
+└── settings: Settings[] (key-value pairs)
+```
 
 ---
+
+## 🔄 Issues em Progresso (0/11)
 
 ## 💤 Issues Pendentes (2/11)
 
@@ -228,44 +254,45 @@
 
 ## 📈 Métricas
 
-- **Issues concluídas:** 8/11 (73%) ✅
-- **Issues em progresso:** 1/11 (9%)
+- **Issues concluídas:** 9/11 (82%) ✅
+- **Issues em progresso:** 0/11 (0%)
 - **Issues pendentes:** 2/11 (18%)
 
 **Tempo estimado restante:**
-- Alta prioridade (Issue #53): ~1-2 dias de engenharia + testes
 - Futuro (#40, #41): ~3-5 dias adicionais após discovery
 
 ---
 
 ## 🎯 Próximos Passos Recomendados
 
-1. Finalizar Issue #53 consolidando Dexie para bills/goals/settings e adicionando testes/unit + docs.
-2. Criar script de migração (localStorage → Dexie) para garantir zero perda de dados quando adapters forem removidos.
-3. Planejar discovery técnico para Issue #40 (Web Worker + streaming) e Issue #41 (sync engine) antes de iniciar implementação.
+1. ✅ Issue #53 concluída: Dexie agora é a única fonte de dados (transactions, bills, goals, settings).
+2. Planejar discovery técnico para Issue #40 (Web Worker + streaming) e Issue #41 (sync engine) antes de iniciar implementação.
+3. Considerar PWA offline-first capabilities com ServiceWorker e Dexie.
 
 ---
 
 ## 🐛 Problemas Conhecidos
 
-1. Bills e goals ainda dependem de localStorage (adapters). Precisam migrar para Dexie para manter consistência e apoiar sync futuro.
-2. Não existe script automático para migrar dados antigos do Spark/useKV; usuários precisam reimportar manualmente até Issue #53 ser concluída.
+1. ~~Bills e goals ainda dependem de localStorage (adapters).~~ ✅ RESOLVIDO: Migrados para Dexie
+2. ~~Não existe script automático para migrar dados antigos do Spark/useKV.~~ ✅ RESOLVIDO: Script `migrate-to-dexie.ts` criado
 3. Codecov ainda depende do secret `CODECOV_TOKEN` para reportar cobertura no CI.
 
 ---
 
 ## 📝 Notas Técnicas
 
-- **Persistência atual:** Dexie para transações, categorias, budgets e contas; localStorage (adapters) para bills/goals/idioma.
-- **Hooks principais:** `useAppTransactions`, `useBillsAdapter`, `useGoalsAdapter`; aguardando versões definitivas Dexie.
+- **Persistência atual:** Dexie para transactions, categories, budgets, accounts, bills, goals e settings.
+- **Hooks principais:** `useAppTransactions`, `useBills`, `useGoals`, `useAppLanguage` (todos Dexie-based).
+- **Adapters deprecados:** `useBillsAdapter`, `useGoalsAdapter` podem ser removidos em limpeza futura.
 - **Testes:** Vitest (unit), Playwright (E2E) e fake-indexeddb configurado em `test/setup.ts`.
 - **CI:** GitHub Actions (`.github/workflows/ci.yml`) roda lint + build + testes + cobertura.
 - **Formatos suportados:** CSV, OFX, TXT, QIF; múltiplos arquivos e regras personalizadas de categoria já disponíveis.
+- **Migração automática:** Executa na primeira carga se detectar dados em localStorage, com backup automático.
 
 ---
 
-**Última atualização:** 22/11/2025  
+**Última atualização:** 23/11/2025  
 **Responsável:** @fabioaap  
 **Projeto:** FinanceAI - Upload de Arquivos Bancários
 
-**🎯 Foco atual: concluir Issue #53 para liberar Dexie completo e preparar terreno para otimizações (Issue #40) e sync (Issue #41).**
+**🎯 Foco atual: Issues #40 e #41 pendentes. Core implementation (82%) completa! 🎉**

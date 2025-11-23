@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Transaction, Bill, Goal } from '@/lib/types'
-import { useAppTransactions, useBillsAdapter, useGoalsAdapter } from '@/hooks'
+import { useAppTransactions, useBills, useGoals, useAppLanguage } from '@/hooks'
 import { SummaryCards } from '@/components/dashboard/SummaryCards'
 import { CategoryBreakdown } from '@/components/dashboard/CategoryBreakdown'
 import { UpcomingBills } from '@/components/dashboard/UpcomingBills'
@@ -19,32 +19,61 @@ import { formatMonthYear, getMonthKey } from '@/lib/constants'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
 import { Language, getTranslation } from '@/lib/i18n'
+import { runMigration, needsMigration } from '@/scripts/migrate-to-dexie'
 
 function App() {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const monthKey = getMonthKey(currentMonth)
+  const [migrationComplete, setMigrationComplete] = useState(false)
 
-  // 🔄 MIGRATED: Language agora usa localStorage diretamente
-  const [language, setLanguage] = useState<Language>(() => {
-    const stored = localStorage.getItem('app-language')
-    return (stored as Language) || 'en'
-  })
-
-  // Persiste idioma no localStorage quando mudar
-  useEffect(() => {
-    localStorage.setItem('app-language', language)
-  }, [language])
+  // ✅ MIGRATED: Language now uses Dexie via useAppLanguage hook
+  const { language, setLanguage: setLanguageDb, loading: languageLoading } = useAppLanguage()
 
   const t = getTranslation(language || 'en')
 
-  // 🔄 MIGRATED: Agora usa Dexie via hook adaptador
-  const { transactions, loading, addTransaction, removeTransaction } = useAppTransactions(monthKey)
+  // ✅ MIGRATED: Transactions using Dexie via useAppTransactions hook
+  const { transactions, loading: transactionsLoading, addTransaction, removeTransaction } = useAppTransactions(monthKey)
   
-  // 🔄 MIGRATED: Bills agora usa localStorage via hook adaptador
-  const { bills, addBill, removeBill, updateBill } = useBillsAdapter()
+  // ✅ MIGRATED: Bills now using Dexie via useBills hook
+  const { bills, loading: billsLoading, addBill, removeBill, updateBill } = useBills()
   
-  // 🔄 MIGRATED: Goals agora usa localStorage via hook adaptador
-  const { goals, addGoal, removeGoal, updateGoal } = useGoalsAdapter()
+  // ✅ MIGRATED: Goals now using Dexie via useGoals hook
+  const { goals, loading: goalsLoading, addGoal, removeGoal, updateGoal } = useGoals()
+
+  // Run migration on first load if needed
+  useEffect(() => {
+    const runMigrationIfNeeded = async () => {
+      if (needsMigration()) {
+        console.log('Migration needed, running...')
+        try {
+          const result = await runMigration()
+          if (result.success) {
+            toast.success(
+              language === 'pt-BR'
+                ? `Migração concluída! ${result.billsMigrated} contas, ${result.goalsMigrated} metas migradas.`
+                : `Migration complete! ${result.billsMigrated} bills, ${result.goalsMigrated} goals migrated.`
+            )
+          } else {
+            toast.error(
+              language === 'pt-BR'
+                ? 'Migração concluída com erros. Verifique o console.'
+                : 'Migration completed with errors. Check console.'
+            )
+          }
+        } catch (error) {
+          console.error('Migration error:', error)
+          toast.error(
+            language === 'pt-BR'
+              ? 'Erro na migração de dados'
+              : 'Data migration error'
+          )
+        }
+      }
+      setMigrationComplete(true)
+    }
+    
+    runMigrationIfNeeded()
+  }, [language])
 
   const [showAddTransaction, setShowAddTransaction] = useState(false)
   const [showAddBill, setShowAddBill] = useState(false)
@@ -162,13 +191,21 @@ function App() {
     }
   }
 
-  const handleLanguageChange = (newLanguage: Language) => {
-    setLanguage(newLanguage)
-    toast.success(
-      newLanguage === 'pt-BR'
-        ? 'Idioma alterado para Português (Brasil)'
-        : 'Language changed to English'
-    )
+  const handleLanguageChange = async (newLanguage: Language) => {
+    try {
+      await setLanguageDb(newLanguage)
+      toast.success(
+        newLanguage === 'pt-BR'
+          ? 'Idioma alterado para Português (Brasil)'
+          : 'Language changed to English'
+      )
+    } catch (error) {
+      toast.error(
+        newLanguage === 'pt-BR'
+          ? 'Erro ao alterar idioma'
+          : 'Failed to change language'
+      )
+    }
   }
 
   const handleImportComplete = async (importedTransactions: Transaction[]) => {
@@ -192,7 +229,8 @@ function App() {
     }
   }
 
-  // Loading state durante carregamento inicial do Dexie
+  // Loading state during initial Dexie load and migration
+  const loading = transactionsLoading || billsLoading || goalsLoading || languageLoading || !migrationComplete
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
