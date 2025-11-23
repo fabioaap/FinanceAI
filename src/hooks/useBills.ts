@@ -41,10 +41,9 @@ export function useBills() {
   const loadBills = useCallback(async () => {
     try {
       setLoading(true)
-      const dbBills = await billRepository.getAll()
-      // Sort by dueDate ascending
-      const sorted = dbBills.sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime())
-      const appBills = sorted.map(dbToApp)
+      // Use Dexie's built-in sorting for better performance
+      const dbBills = await billRepository.table.orderBy('dueDate').toArray()
+      const appBills = dbBills.map(dbToApp)
       setBills(appBills)
       setError(null)
     } catch (err) {
@@ -75,6 +74,11 @@ export function useBills() {
   const updateBill = useCallback(
     async (billId: string, updates: Partial<AppBill>) => {
       try {
+        const numericId = Number(billId)
+        if (isNaN(numericId)) {
+          throw new Error('Invalid bill ID')
+        }
+
         const dbUpdates: Partial<DbBill> = {}
         if (updates.description !== undefined) dbUpdates.description = updates.description
         if (updates.amount !== undefined) dbUpdates.amount = updates.amount
@@ -83,7 +87,7 @@ export function useBills() {
         if (updates.recurrence !== undefined) dbUpdates.recurrence = updates.recurrence
         dbUpdates.updatedAt = new Date()
 
-        await billRepository.update(Number(billId), dbUpdates)
+        await billRepository.update(numericId, dbUpdates)
         await loadBills()
       } catch (err) {
         console.error('Failed to update bill:', err)
@@ -96,7 +100,12 @@ export function useBills() {
   const removeBill = useCallback(
     async (billId: string) => {
       try {
-        await billRepository.delete(Number(billId))
+        const numericId = Number(billId)
+        if (isNaN(numericId)) {
+          throw new Error('Invalid bill ID')
+        }
+
+        await billRepository.delete(numericId)
         await loadBills()
       } catch (err) {
         console.error('Failed to remove bill:', err)

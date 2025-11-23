@@ -44,9 +44,10 @@ export interface Goal {
 export type Language = 'en' | 'pt-BR'
 
 export interface AppSettings {
+  id?: number
   key: string
   value: string
-  updatedAt: string
+  updatedAt: Date
 }
 
 export interface CategoryInfo {

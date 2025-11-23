@@ -21,8 +21,8 @@ export class SettingsRepository extends BaseRepository<AppSettings> {
       .equals(key)
       .first();
 
-    if (existing) {
-      await this.update(existing.id!, { value, updatedAt: new Date() });
+    if (existing && existing.id !== undefined) {
+      await this.update(existing.id, { value, updatedAt: new Date() });
     } else {
       await this.create({ key, value, updatedAt: new Date() });
     }

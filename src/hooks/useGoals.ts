@@ -73,6 +73,11 @@ export function useGoals() {
   const updateGoal = useCallback(
     async (goalId: string, updates: Partial<AppGoal>) => {
       try {
+        const numericId = Number(goalId)
+        if (isNaN(numericId)) {
+          throw new Error('Invalid goal ID')
+        }
+
         const dbUpdates: Partial<DbGoal> = {}
         if (updates.description !== undefined) dbUpdates.description = updates.description
         if (updates.targetAmount !== undefined) dbUpdates.targetAmount = updates.targetAmount
@@ -81,7 +86,7 @@ export function useGoals() {
         if (updates.type !== undefined) dbUpdates.type = updates.type
         dbUpdates.updatedAt = new Date()
 
-        await goalRepository.update(Number(goalId), dbUpdates)
+        await goalRepository.update(numericId, dbUpdates)
         await loadGoals()
       } catch (err) {
         console.error('Failed to update goal:', err)
@@ -94,7 +99,12 @@ export function useGoals() {
   const removeGoal = useCallback(
     async (goalId: string) => {
       try {
-        await goalRepository.delete(Number(goalId))
+        const numericId = Number(goalId)
+        if (isNaN(numericId)) {
+          throw new Error('Invalid goal ID')
+        }
+
+        await goalRepository.delete(numericId)
         await loadGoals()
       } catch (err) {
         console.error('Failed to remove goal:', err)
@@ -107,7 +117,12 @@ export function useGoals() {
   const updateProgress = useCallback(
     async (goalId: string, currentAmount: number) => {
       try {
-        await goalRepository.updateProgress(Number(goalId), currentAmount)
+        const numericId = Number(goalId)
+        if (isNaN(numericId)) {
+          throw new Error('Invalid goal ID')
+        }
+
+        await goalRepository.updateProgress(numericId, currentAmount)
         await loadGoals()
       } catch (err) {
         console.error('Failed to update progress:', err)
