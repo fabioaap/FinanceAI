@@ -6,16 +6,18 @@ This document describes the complete migration from GitHub Spark Framework to De
 
 **Migration Date**: November 2024  
 **Status**: ✅ Complete  
-**Total Commits**: 8  
+**Final Update**: November 23, 2024
+**Total Commits**: 10+  
 **Packages Removed**: 29
 
 ## Objectives
 
-1. Remove all dependencies on `@github/spark` package
-2. Migrate transaction state to Dexie (IndexedDB) 
-3. Migrate bills, goals, and language preference to localStorage
-4. Maintain 100% feature parity with existing functionality
-5. Keep build, lint, and tests green throughout migration
+1. ✅ Remove all dependencies on `@github/spark` package
+2. ✅ Migrate transaction state to Dexie (IndexedDB) 
+3. ✅ Migrate bills, goals, and language preference to Dexie (IndexedDB)
+4. ✅ Create automatic migration script for existing localStorage data
+5. ✅ Maintain 100% feature parity with existing functionality
+6. ✅ Keep build, lint, and tests green throughout migration
 
 ## Architecture Changes
 
@@ -34,31 +36,47 @@ const [language, setLanguage] = useKV<Language>('app-language', 'en')
 ### After Migration
 
 ```typescript
-// New approach with Dexie + localStorage
-import { useAppTransactions, useBillsAdapter, useGoalsAdapter } from '@/hooks'
-import { useState, useEffect } from 'react'
+// New approach with Dexie (IndexedDB)
+import { useAppTransactions, useBills, useGoals, useAppLanguage } from '@/hooks'
 
 // Transactions: Dexie (IndexedDB)
 const { transactions, loading, addTransaction, removeTransaction } = useAppTransactions(monthKey)
 
-// Bills: localStorage adapter
-const { bills, addBill, removeBill, updateBill } = useBillsAdapter()
+// Bills: Dexie (IndexedDB)
+const { bills, loading, addBill, removeBill, updateBill } = useBills()
 
-// Goals: localStorage adapter
-const { goals, addGoal, removeGoal, updateGoal } = useGoalsAdapter()
+// Goals: Dexie (IndexedDB)
+const { goals, loading, addGoal, removeGoal, updateGoal, updateProgress } = useGoals()
 
-// Language: direct localStorage
-const [language, setLanguage] = useState<Language>(() => 
-  (localStorage.getItem('app-language') as Language) || 'en'
-)
-useEffect(() => {
-  localStorage.setItem('app-language', language)
-}, [language])
+// Language: Dexie settings table
+const { language, loading, setLanguage } = useAppLanguage()
 ```
 
 ## Migration Phases
 
-### Phase 1: Adapter Layer (Already Complete)
+### Phase 1: Dexie Schema Setup (Complete)
+
+**Files Created/Modified:**
+- `src/types/index.ts` - Added Bill, Goal, AppSettings types
+- `src/database/db.ts` - Added bills, goals, settings tables (version 2)
+- `src/repositories/BillRepository.ts` - Repository for bill operations
+- `src/repositories/GoalRepository.ts` - Repository for goal operations  
+- `src/repositories/SettingsRepository.ts` - Repository for app settings
+
+**Schema Changes:**
+```typescript
+this.version(2).stores({
+  transactions: '++id, description, amount, type, categoryId, date, createdAt, updatedAt',
+  categories: '++id, name, type, color, createdAt, updatedAt',
+  budgets: '++id, categoryId, amount, period, startDate, endDate, createdAt, updatedAt',
+  accounts: '++id, name, type, balance, currency, createdAt, updatedAt',
+  bills: '++id, description, amount, dueDate, status, recurrence, createdAt, updatedAt',
+  goals: '++id, description, targetAmount, currentAmount, deadline, type, createdAt, updatedAt',
+  settings: '++id, &key, value, updatedAt',
+});
+```
+
+### Phase 2: Transaction Adapter (Already Complete)
 
 **Files Created:**
 - `src/hooks/useAppTransactions.ts` - Adapter between App Transaction format and Dexie format
@@ -68,54 +86,67 @@ useEffect(() => {
 - Maps CategoryType strings to categoryId numbers
 - Handles async operations with proper error handling
 
-### Phase 2: Transactions (Already Complete)
+### Phase 3: Bills, Goals, and Language Hooks (Complete)
+
+**Files Created:**
+- `src/hooks/useBills.ts` - Full CRUD operations for bills with Dexie
+- `src/hooks/useGoals.ts` - Full CRUD + progress tracking for goals with Dexie
+- `src/hooks/useAppLanguage.ts` - Language setting management via Dexie settings table
+- `src/hooks/__tests__/useBills.test.ts` - Unit tests (7 tests)
+- `src/hooks/__tests__/useGoals.test.ts` - Unit tests (7 tests)
+- `src/hooks/__tests__/useAppLanguage.test.ts` - Unit tests (5 tests)
+
+**Test Coverage:** 18 tests covering CRUD operations, sorting, persistence
+
+### Phase 4: App Integration (Complete)
 
 **Files Modified:**
-- `src/App.tsx` - Updated to use `useAppTransactions` hook
+- `src/App.tsx` - Updated to use useBills, useGoals, useAppLanguage hooks
+- `src/hooks/index.ts` - Exported new hooks
 
 **Changes:**
-- Added loading state UI during initial Dexie load
-- Made transaction handlers async with try/catch
-- Added toast notifications for success/error states
+- All handlers now async with try/catch error handling
+- Loading states combined for migration + data loading
+- Toast notifications for all success/error states
+- Migration runs automatically on app mount
 
-### Phase 3: Bills
-
-**Files Created:**
-- `src/hooks/useBillsAdapter.ts` - localStorage-based adapter for bills
-
-**Files Modified:**
-- `src/App.tsx` - Updated to use `useBillsAdapter` hook
-- `src/hooks/index.ts` - Exported new hook
-
-**Storage Key:** `financeai-bills`
-
-### Phase 4: Goals
+### Phase 5: Data Migration Script (Complete)
 
 **Files Created:**
-- `src/hooks/useGoalsAdapter.ts` - localStorage-based adapter for goals
+- `src/lib/migrate-local-storage.ts` - Automatic migration from localStorage to Dexie
+
+**Migration Features:**
+- Reads legacy data from localStorage keys:
+  - `financeai-bills` → Dexie bills table
+  - `financeai-goals` → Dexie goals table
+  - `app-language` → Dexie settings table
+- Converts data formats (string dates → Date objects, string IDs → numeric)
+- Cleans up old localStorage data after successful migration
+- Uses sessionStorage flag `spark-migration-done` to prevent re-execution
+- Idempotent - safe to run multiple times
+
+**Usage:**
+```typescript
+// In App.tsx
+useEffect(() => {
+  async function runMigration() {
+    const result = await migrateLocalStorageToDexie()
+    if (result.success) {
+      console.log('Migrated:', result.migrated)
+    }
+  }
+  runMigration()
+}, [])
+```
+
+### Phase 6: Cleanup (Complete)
+
+**Files Removed:**
+- `src/hooks/useBillsAdapter.ts` - Temporary localStorage adapter
+- `src/hooks/useGoalsAdapter.ts` - Temporary localStorage adapter
 
 **Files Modified:**
-- `src/App.tsx` - Updated to use `useGoalsAdapter` hook
-- `src/hooks/index.ts` - Exported new hook
-
-**Storage Key:** `financeai-goals`
-
-### Phase 5: Language Preference
-
-**Files Modified:**
-- `src/App.tsx` - Replaced `useKV` with `useState` + `useEffect`
-
-**Storage Key:** `app-language`
-
-### Phase 6: Spark Cleanup
-
-**Files Modified:**
-- `vite.config.ts` - Removed `sparkPlugin` and `createIconImportProxy`
-- `src/main.tsx` - Removed `import "@github/spark/spark"`
-- `src/components/modals/CategoryMappingModal.tsx` - Replaced `useKV` with localStorage
-- `package.json` - Removed `@github/spark` dependency
-
-**Storage Key (CategoryMapping):** `category-rules`
+- `src/hooks/index.ts` - Removed adapter exports
 
 ## API Changes
 
@@ -161,11 +192,47 @@ const handleAddBill = async (bill: Bill) => {
 
 | Data Type | Storage | Rationale |
 |-----------|---------|-----------|
-| Transactions | Dexie (IndexedDB) | Large datasets, complex queries, Dexie repos exist |
-| Bills | localStorage | Small dataset, simple CRUD |
-| Goals | localStorage | Small dataset, simple CRUD |
-| Language | localStorage | Single value, simple persistence |
-| Category Rules | localStorage | Small dataset, infrequent changes |
+| Transactions | Dexie (IndexedDB) | Large datasets, complex queries, month-based filtering |
+| Bills | Dexie (IndexedDB) | Structured data with dates, status tracking, recurring items |
+| Goals | Dexie (IndexedDB) | Progress tracking, structured queries |
+| Language | Dexie (IndexedDB) settings | Consistent with other app state |
+| Category Rules | localStorage | Small dataset, infrequent changes, backward compatibility |
+
+**Key Benefits of Dexie:**
+- Typed schema with auto-incrementing IDs
+- Efficient querying and indexing
+- Supports complex data types (Date objects)
+- Better for offline-first PWA architecture
+- No localStorage quota issues
+
+## Automatic Data Migration
+
+The migration script (`src/lib/migrate-local-storage.ts`) handles automatic one-time migration:
+
+```typescript
+// Migration happens automatically on app mount
+useEffect(() => {
+  async function runMigration() {
+    const result = await migrateLocalStorageToDexie()
+    // result.migrated contains counts of migrated items
+  }
+  runMigration()
+}, [])
+```
+
+**Migration Process:**
+1. Check sessionStorage flag to see if already migrated
+2. Read legacy data from localStorage keys
+3. Convert string dates to Date objects
+4. Write to Dexie tables
+5. Remove old localStorage data
+6. Set sessionStorage flag to prevent re-run
+
+**Safety Features:**
+- Idempotent - safe to run multiple times
+- Preserves all data during conversion
+- Only cleans up after successful Dexie write
+- Session-scoped flag prevents duplicate migrations
 
 ## Testing Strategy
 
@@ -212,36 +279,21 @@ If issues arise, rollback is straightforward:
 
 ## Future Enhancements
 
-1. **Complete Dexie Migration**: Migrate bills and goals from localStorage to Dexie repositories
-2. **Advanced Queries**: Leverage Dexie's query capabilities for filtering and sorting
-3. **Sync Engine**: Use Dexie's observables for real-time updates
-4. **Offline Support**: Enhanced PWA capabilities with IndexedDB
-
-## Troubleshooting
-
-### Issue: Transactions not loading
-**Solution**: Check browser DevTools → Application → IndexedDB → FinanceAI database exists
-
-### Issue: Bills/Goals not persisting
-**Solution**: Check localStorage quota and permissions
-
-### Issue: Build fails
-**Solution**: Clear `node_modules` and `dist`, run `npm install && npm run build`
-
-## References
-
-- [Dexie Documentation](https://dexie.org/)
-- [IndexedDB API](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)
-- [Repository Pattern Implementation](../REPOSITORY_PATTERN.md)
-- [Breaking Changes](./BREAKING_CHANGES.md)
+1. ~~**Complete Dexie Migration**: Migrate bills and goals from localStorage to Dexie repositories~~ ✅ **COMPLETE**
+2. ~~**Automatic Data Migration**: Create migration script for existing localStorage data~~ ✅ **COMPLETE**
+3. **Advanced Queries**: Leverage Dexie's query capabilities for filtering and sorting (already implemented for bills by dueDate)
+4. **Sync Engine**: Use Dexie's observables for real-time updates across tabs
+5. **Offline Support**: Enhanced PWA capabilities with IndexedDB
+6. **Cloud Sync**: Backend integration with conflict resolution
 
 ## Contributors
 
 - Migration executed by: GitHub Copilot Agent
 - Code review: Required before merge
-- Testing: Automated + Manual verification
+- Testing: Automated (18 unit tests) + Manual verification
 
 ---
 
 **Migration Status**: ✅ Complete  
-**Next Steps**: See [MIGRATION_SUMMARY.md](./MIGRATION_SUMMARY.md) for final report
+**Final Update**: November 23, 2024  
+**Next Steps**: See [BREAKING_CHANGES.md](./BREAKING_CHANGES.md) for API changes
