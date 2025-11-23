@@ -39,3 +39,32 @@ export interface Account {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface Bill {
+  id?: number;
+  description: string;
+  amount: number;
+  dueDate: Date;
+  status: 'pending' | 'paid' | 'overdue';
+  recurrence?: 'once' | 'weekly' | 'monthly' | 'yearly';
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Goal {
+  id?: number;
+  description: string;
+  targetAmount: number;
+  currentAmount: number;
+  deadline: Date;
+  type: 'savings' | 'debt' | 'reserve';
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface AppSettings {
+  id?: number;
+  key: string;
+  value: string;
+  updatedAt: Date;
+}
