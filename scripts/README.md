@@ -188,3 +188,74 @@ gh milestone create "v0.2" --description "Objetivos para v0.2" --due-date "2025-
 ---
 
 **Desenvolvido para FinanceAI - DevOps Automation** 🚀
+
+---
+
+## 🧪 generate-large-csv.js
+
+Generates large CSV test files for performance testing of the bank file parser.
+
+### Usage
+
+```bash
+# Generate 50k line file (default)
+node scripts/generate-large-csv.js
+
+# Generate custom size
+node scripts/generate-large-csv.js 10000 test-10k.csv
+node scripts/generate-large-csv.js 100000 test-100k.csv
+
+# Generate multiple test files
+node scripts/generate-large-csv.js 1000 small.csv
+node scripts/generate-large-csv.js 10000 medium.csv
+node scripts/generate-large-csv.js 50000 large.csv
+node scripts/generate-large-csv.js 100000 xlarge.csv
+```
+
+### Output Format
+
+Generates CSV files in the format:
+```csv
+Data,Descrição,Valor
+01/01/2024,Supermercado Extra #0,-150.50
+02/01/2024,Restaurante Italiano #1,85.30
+...
+```
+
+### File Sizes
+
+- 10k lines: ~0.5 MB
+- 50k lines: ~2.5 MB
+- 100k lines: ~5 MB
+
+### Testing Workflow
+
+1. Generate test file:
+   ```bash
+   node scripts/generate-large-csv.js 50000 test-50k.csv
+   ```
+
+2. Start dev server:
+   ```bash
+   npm run dev
+   ```
+
+3. Upload the generated CSV file in the application
+
+4. Observe:
+   - Progress bar updates in real-time
+   - UI remains responsive
+   - Console logs performance metrics
+
+### Performance Expectations
+
+With Web Worker:
+- 10k lines: ~50-100ms
+- 50k lines: ~200-300ms
+- 100k lines: ~500-800ms
+
+Without Web Worker (old sync method):
+- 10k lines: ~500-1000ms (UI blocks)
+- 50k lines: ~2000-5000ms (UI blocks)
+- 100k lines: ~5000-10000ms (UI blocks)
+
