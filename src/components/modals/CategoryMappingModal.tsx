@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
     Dialog,
     DialogContent,
@@ -19,7 +19,6 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Plus, Trash2, Info } from 'lucide-react'
 import { CategoryType } from '@/lib/types'
-import { useKV } from '@github/spark/hooks'
 
 export interface CategoryRule {
     id: string
@@ -46,7 +45,25 @@ const categoryOptions: { value: CategoryType; label: string; icon: string }[] = 
 ]
 
 export function CategoryMappingModal({ open, onClose }: CategoryMappingModalProps) {
-    const [rules, setRules] = useKV<CategoryRule[]>('category-rules', [])
+    const [rules, setRules] = useState<CategoryRule[]>(() => {
+        try {
+            const stored = localStorage.getItem('category-rules')
+            return stored ? JSON.parse(stored) : []
+        } catch (error) {
+            console.error('Failed to load category rules:', error)
+            return []
+        }
+    })
+
+    // Persiste regras no localStorage sempre que mudar
+    useEffect(() => {
+        try {
+            localStorage.setItem('category-rules', JSON.stringify(rules))
+        } catch (error) {
+            console.error('Failed to save category rules:', error)
+        }
+    }, [rules])
+
     const [newKeyword, setNewKeyword] = useState('')
     const [newCategory, setNewCategory] = useState<CategoryType>('other')
     const [caseSensitive, setCaseSensitive] = useState(false)

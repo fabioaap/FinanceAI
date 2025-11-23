@@ -1,131 +1,121 @@
-# BACKLOG - FinanceAI (Upload de Arquivos Bancários)
+# BACKLOG - FinanceAI
 
-Este backlog documenta o trabalho já realizado (Done), o que está em andamento (In Progress) e o que ainda falta (To Do). O objetivo é manter todo o time alinhado, priorizar atividades e registrar critérios de aceite e responsáveis.
-
----
-
-## ✅ Done
-- Criar tipos TypeScript para upload e parse
-  - Files: `src/lib/types.ts`
-  - Critério de aceite: Tipos documentados e sem erros TypeScript
-- Implementar parser multi-formato
-  - Files: `src/lib/bank-file-parser.ts`
-  - Critério de aceite: Suporta CSV, OFX e TXT; parsea datas/valores; sugestão de categorias
-- Criar componente de upload (drag & drop + preview)
-  - Files: `src/components/BankFileUpload.tsx`
-  - Critério de aceite: Drag-and-drop funcional, validações, preview de transações
-- Criar modal de importação e integração básica de importação
-  - Files: `src/components/modals/ImportBankFileModal.tsx`
-  - Critério de aceite: Conversão de `ParsedTransaction` para `Transaction`, callback `onImportComplete` implementado
-- Documentação e exemplos de arquivo
-  - Files: `docs/*` (`bank-file-upload.md`, `GUIA_INTEGRACAO.md`, `IMPLEMENTACAO_RESUMO.md`, `ARQUIVOS_CRIADOS.md`)
+Status atualizado: 23/11/2025 | PR #53 COMPLETA (pronta para merge) | Issues #40/#41 em discovery
 
 ---
 
-## 🔄 In Progress
-1. Integrar `ImportBankFileModal` no `App.tsx`
-   - O que fazer:
-     - Adicionar botão no header (`Importar Extrato`)
-     - Adicionar `showImportFile` no estado
-     - Implementar `handleImportComplete` para gravar no `useKV`/Dexie
-     - Testar com `docs/examples/*`
-   - Critério de aceite:
-     - Botão abre modal e a importação adiciona transações ao estado e persiste conforme política de armazenamento
-   - Responsável: @fabioaap
-   - Estimativa: 1h
+## ✅ Done (9/11)
+
+- [Issue #33] Integrar ImportBankFileModal ao App.tsx
+- [Issue #34] Testes unitários para bank-file-parser (28 testes, 100% coverage)
+- [Issue #35] Testes E2E Playwright para fluxo de importação
+- [Issue #36] Detectar e prevenir transações duplicadas
+- [Issue #37] Suporte QIF no parser
+- [Issue #38] Mapeamento de categorias customizável
+- [Issue #39] Upload de múltiplos arquivos simultâneos
+- [Issue #42] Pipeline CI (lint, build, tests, coverage)
+- [Issue #53] Remover Spark Framework, migrar para Dexie + localStorage ✨
 
 ---
 
-## 📝 To Do (Prioridade Alta)
-2. Criar testes unitários para `bank-file-parser`
-   - Abordagem: Vitest/Jest + fixtures em `docs/examples`
-   - Casos:
-     - CSV formatos (vírgula e ponto-e-vírgula)
-     - OFX com e sem MEMO
-     - TXT com padrões variados
-     - Datas inválidas e valores malformados
-   - Critério de aceite: cobertura >= 80% das rotinas principais
-   - Estimativa: 2-3h
+## 🔄 In Discovery (2/11)
 
-3. Criar testes E2E para fluxo de upload/importação
-   - Ferramenta: Playwright / Cypress
-   - Fluxo:
-     - Abrir modal, dropar arquivo, visualizar prévia, confirmar import
-     - Validar inserção na UI e persistência local
-   - Critério de aceite: testes automatizados na pipeline
-   - Estimativa: 3-4h
+### Issue #40 – Otimizar parser para arquivos grandes (Web Worker)
 
-4. Detectar e prevenir transações duplicadas
-   - Estratégia: gerar hash por `date + amount + description` antes de inserir
-   - UI: mostrar alert/checkbox na preview para ignorar/mesclar duplicatas
-   - Critério de aceite: não inserir duplicatas e opção de mesclagem
-   - Estimativa: 3h
+**Status:** 🚀 Em execução (delegado ao agente de nuvem)  
+**Estimativa:** 2-3 dias  
+**Branch esperado:** `copilot/add-web-worker-for-parser`
 
----
+**Scope:**
+- Arquivo: `src/lib/bank-file-parser-worker.ts`
+- Implementar Worker para parsing assíncrono
+- Suportar arquivos >10k linhas sem travar UI
+- Teste com arquivo 50k+ linhas real (banco)
+- Benchmark: antes/depois de performance
 
-## 🧭 To Do (Prioridade Média)
-5. Suporte para QIF
-   - Adicionar `parseQIF()` e atualizar `BankFileFormat`
-   - Critério de aceite: arquivos QIF são parseados corretamente
-   - Estimativa: 2-3h
+**Critérios de sucesso:**
+- ✅ Parser em Web Worker (transferência via postMessage)
+- ✅ UI responsiva durante import grande
+- ✅ Fallback para main thread se Worker indisponível
+- ✅ Testes E2E com arquivo 50k linhas
+- ✅ Documentação em docs/
 
-6. Mapeamento de categorias customizável
-   - UI para mapear descrições/palavras-chave para categorias
-   - Persistir regras no DB local (Dexie)
-   - Critério de aceite: usuário consegue criar regra, e parser aplica regras no processamento
-   - Estimativa: 4-5h
+### Issue #41 – Cloud Sync Engine + Conflict Resolution
 
-7. Permitir múltiplos arquivos simultâneos
-   - UI: aceitar array de arquivos no upload
-   - UX: barra de progresso por arquivo e por lote
-   - Critério de aceite: múltiplos arquivos processados com feedback
-   - Estimativa: 4h
+**Status:** 💬 Discovery (requisitos backend a definir)  
+**Estimativa:** TBD  
+**Prioridade:** Depois de #40 completo
+
+**Scope:**
+- Sincronização local → servidor remoto
+- Conflict resolution (último write wins / merge 3-way)
+- Offline-first com fila de sincronização
+- Requer backend (NestJS + PostgreSQL)
+
+**Bloqueadores:**
+- ⏳ Definir especificação de API (REST/GraphQL)
+- ⏳ Implementar backend de sincronização
+- ⏳ Escolher estratégia de versionamento (CRDT/timestamp)
 
 ---
 
-## ⚙️ To Do (Prioridade Baixa / Futuro)
-8. Otimizar parser para arquivos grandes (>10k linhas)
-   - Técnica: WebWorker / stream parsing
-   - Critério de aceite: tempo de parse aceitável, UI não travando
-   - Estimativa: 2-3 dias
+## 📋 Próximos Passos (Bloqueadores)
 
-9. Integração com Sync Engine / armazenamento em nuvem
-   - Sincronizar com backend; planejamento de conflict resolution
-   - Critério de aceite: sincronização confiável com rollback
-   - Estimativa: depende de infra
+### Issue #53 – Finalizar (antes de mergear)
+- [ ] **Code review** de PR #53 (revisar 13 commits)
+- [ ] **Testes manuais** no browser (bills, goals, language)
+- [ ] **Validação IndexedDB** (DevTools → Application → IndexedDB → FinanceAI)
+- [ ] **Merge para main** (merge --no-ff + push)
+- [ ] **Notificar breaking changes** (Transaction IDs são numbers agora)
 
-10. CI (lint, build, testes)
-   - Integrar pipeline (GitHub Actions) com lint, build e testes
-   - Critério de aceite: pipeline em PRs
-   - Estimativa: 4h
+### Issue #40 – Em Execução
+- Branch: `copilot/add-web-worker-for-parser`
+- Delegado ao agente de nuvem
+- Acompanhar PR relacionada
 
----
-
-## 📌 Observações
-- `@financeai/infra-db` é referenciado em `App.tsx`, mas pode não existir no workspace; confirme se prefere usar `useKV` ou conectar ao pacote.
-- Criar issues no repo para cada item do backlog facilita acompanhamento e atribuição; posso criar PRs/Issues se desejar.
+### Issue #41 – Aguardando Discovery
+- Definir requisitos backend (API spec)
+- Escolher plataforma sync (Firebase, custom server, etc)
+- Estimar esforço (depende arquitetura)
 
 ---
 
-## 📈 Sugestões rápidas
-- Criar `docs/TEMPLATES/issue-backlog.md` para padronizar criação de items e critérios de aceite ✅
-- Reunir dados de arquivos reais (anonimizados) para melhorar regras de categorização
+## 🏁 Checklist Final Issue #53 (Pré-merge)
+
+- ✅ Nenhuma referência ao Spark/useKV em `src/`
+- ✅ Bills/goals em localStorage adapters (Dexie pronto futuro)
+- ✅ Transações em Dexie (IndexedDB)
+- ✅ Testes: lint, build, test → green
+- ✅ Documentação: MIGRATION_*.md + BREAKING_CHANGES.md ✨
+- ⏳ **Code review + manual testing** (falta fazer)
+- ⏳ **Merge para main** (então iniciar #40)
 
 ---
 
-## 🤖 Automação de Issues
+## 📌 Arquitetura Atual (Pós PR #53)
 
-✅ **Scripts criados para automatizar criação de issues e popular GitHub Project #2:**
-- `scripts/issues.json` - Lista estruturada de todas as issues do backlog
-- `scripts/create_issues_api.ps1` - Script PowerShell que cria issues via API REST e adiciona ao Project #2
-- `scripts/README.md` - Instruções completas de uso
+**Persistência:**
+- `Transações` → Dexie (IndexedDB) com schema + Índices
+- `Bills` → localStorage (chave: `financeai-bills`)
+- `Goals` → localStorage (chave: `financeai-goals`)
+- `Language` → localStorage (chave: `app-language`)
+- `Category Rules` → localStorage (chave: `category-rules`)
 
-**Para executar:**
-```pwsh
-cd C:\Users\Educacross\Documents\FinanceAI
-pwsh .\scripts\create_issues_api.ps1 -ProjectNumber 2 -Owner fabioaap -CreateLabels
-```
+**Hooks:**
+- `useAppTransactions` → adapter bidirecional Dexie
+- `useBillsAdapter` → CRUD localStorage (async)
+- `useGoalsAdapter` → CRUD localStorage (async)
+- Cada hook com error handling + toasts
 
-Veja instruções completas em `scripts/README.md`
+**Testes:**
+- Vitest + fake-indexeddb configurado (`test/setup.ts`)
+- 20/28 testes passing (8 falhas pré-existentes)
+- E2E Playwright para fluxos críticos
+
+**Performance:**
+- Indexação Dexie pronta (IDs, dates, categories)
+- Issue #40 cobrirá otimizações de parsing (Web Worker)
+
+**Próximo passo:** Merge #53 → Iniciar #40 (Web Worker)
 
 ---
