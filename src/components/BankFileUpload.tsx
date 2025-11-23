@@ -8,6 +8,7 @@ import { Progress } from '@/components/ui/progress'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import type { BankFileParseResult, ParsedTransaction } from '@/lib/types'
 import { parseBankFile, type CategoryMappingRule } from '@/lib/bank-file-parser'
+import { BankFileParserWorkerManager } from '@/lib/bank-file-parser-worker-manager'
 
 interface FileWithResult {
     file: File
@@ -108,20 +109,20 @@ export function BankFileUpload({
 
     const processFile = async (fileWithResult: FileWithResult): Promise<FileWithResult> => {
         try {
-            // Simula progresso
-            setFiles(prev => prev.map(f =>
-                f.id === fileWithResult.id
-                    ? { ...f, status: 'processing' as const, progress: 30 }
-                    : f
-            ))
+            // Use worker for better performance with large files
+            const manager = new BankFileParserWorkerManager({
+                onProgress: (progress, message, processedLines, totalLines) => {
+                    // Update progress in real-time
+                    setFiles(prev => prev.map(f =>
+                        f.id === fileWithResult.id
+                            ? { ...f, status: 'processing' as const, progress: Math.round(progress) }
+                            : f
+                    ))
+                }
+            })
 
-            const result = await parseBankFile(fileWithResult.file, customRules)
-
-            setFiles(prev => prev.map(f =>
-                f.id === fileWithResult.id
-                    ? { ...f, progress: 100 }
-                    : f
-            ))
+            const result = await manager.parse(fileWithResult.file, customRules)
+            manager.terminate()
 
             return {
                 ...fileWithResult,

@@ -32,3 +32,11 @@ pids
 .devcontainer/
 
 .spark-workbench-id
+
+# Test files
+test-*.csv
+small.csv
+medium.csv
+large.csv
+xlarge.csv
+
