@@ -19,7 +19,7 @@ export class SettingsRepository extends BaseRepository<Settings> {
       return existing.id;
     }
     
-    return await this.create({ key, value } as Omit<Settings, 'id'>);
+    return await this.create({ key, value });
   }
 
   async deleteByKey(key: string): Promise<void> {
