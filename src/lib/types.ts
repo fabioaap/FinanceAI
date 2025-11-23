@@ -41,6 +41,14 @@ export interface Goal {
   createdAt: string
 }
 
+export type Language = 'en' | 'pt-BR'
+
+export interface AppSettings {
+  key: string
+  value: string
+  updatedAt: string
+}
+
 export interface CategoryInfo {
   name: string
   icon: string

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Transaction, Bill, Goal } from '@/lib/types'
-import { useAppTransactions, useBillsAdapter, useGoalsAdapter } from '@/hooks'
+import { useAppTransactions, useBills, useGoals, useAppLanguage } from '@/hooks'
+import { migrateLocalStorageToDexie } from '@/lib/migrate-local-storage'
 import { SummaryCards } from '@/components/dashboard/SummaryCards'
 import { CategoryBreakdown } from '@/components/dashboard/CategoryBreakdown'
 import { UpcomingBills } from '@/components/dashboard/UpcomingBills'
@@ -23,28 +24,48 @@ import { Language, getTranslation } from '@/lib/i18n'
 function App() {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const monthKey = getMonthKey(currentMonth)
+  const [migrationComplete, setMigrationComplete] = useState(false)
 
-  // 🔄 MIGRATED: Language agora usa localStorage diretamente
-  const [language, setLanguage] = useState<Language>(() => {
-    const stored = localStorage.getItem('app-language')
-    return (stored as Language) || 'en'
-  })
-
-  // Persiste idioma no localStorage quando mudar
+  // Run migration on mount
   useEffect(() => {
-    localStorage.setItem('app-language', language)
-  }, [language])
+    let mounted = true
+
+    async function runMigration() {
+      try {
+        const result = await migrateLocalStorageToDexie()
+        if (mounted) {
+          if (result.success) {
+            const { bills, goals, language } = result.migrated
+            if (bills > 0 || goals > 0 || language) {
+              console.log('Migration completed:', result.migrated)
+            }
+          } else {
+            console.error('Migration failed:', result.error)
+          }
+          setMigrationComplete(true)
+        }
+      } catch (error) {
+        console.error('Migration error:', error)
+        if (mounted) {
+          setMigrationComplete(true)
+        }
+      }
+    }
+
+    runMigration()
+
+    return () => {
+      mounted = false
+    }
+  }, [])
+
+  // 🚀 NEW: Use Dexie-backed hooks
+  const { language, loading: languageLoading, setLanguage } = useAppLanguage()
+  const { transactions, loading: transactionsLoading, addTransaction, removeTransaction } = useAppTransactions(monthKey)
+  const { bills, loading: billsLoading, addBill, removeBill, updateBill } = useBills()
+  const { goals, loading: goalsLoading, addGoal, removeGoal, updateGoal } = useGoals()
 
   const t = getTranslation(language || 'en')
-
-  // 🔄 MIGRATED: Agora usa Dexie via hook adaptador
-  const { transactions, loading, addTransaction, removeTransaction } = useAppTransactions(monthKey)
-  
-  // 🔄 MIGRATED: Bills agora usa localStorage via hook adaptador
-  const { bills, addBill, removeBill, updateBill } = useBillsAdapter()
-  
-  // 🔄 MIGRATED: Goals agora usa localStorage via hook adaptador
-  const { goals, addGoal, removeGoal, updateGoal } = useGoalsAdapter()
 
   const [showAddTransaction, setShowAddTransaction] = useState(false)
   const [showAddBill, setShowAddBill] = useState(false)
@@ -162,13 +183,21 @@ function App() {
     }
   }
 
-  const handleLanguageChange = (newLanguage: Language) => {
-    setLanguage(newLanguage)
-    toast.success(
-      newLanguage === 'pt-BR'
-        ? 'Idioma alterado para Português (Brasil)'
-        : 'Language changed to English'
-    )
+  const handleLanguageChange = async (newLanguage: Language) => {
+    try {
+      await setLanguage(newLanguage)
+      toast.success(
+        newLanguage === 'pt-BR'
+          ? 'Idioma alterado para Português (Brasil)'
+          : 'Language changed to English'
+      )
+    } catch (error) {
+      toast.error(
+        newLanguage === 'pt-BR'
+          ? 'Erro ao alterar idioma'
+          : 'Failed to change language'
+      )
+    }
   }
 
   const handleImportComplete = async (importedTransactions: Transaction[]) => {
@@ -192,8 +221,8 @@ function App() {
     }
   }
 
-  // Loading state durante carregamento inicial do Dexie
-  if (loading) {
+  // Loading state durante carregamento inicial do Dexie e migração
+  if (!migrationComplete || languageLoading || transactionsLoading || billsLoading || goalsLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
