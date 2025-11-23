@@ -1,14 +1,18 @@
 # 🚀 Status de Implementação - Backlog FinanceAI
 
-**Data de atualização:** 19 de novembro de 2025  
-**Progresso geral:** 80% concluído (8/10 issues)
+**Data de atualização:** 22 de novembro de 2025  
+**Progresso geral:** 73% concluído (8/11 issues)
 
 **🔗 GitHub Project:** https://github.com/users/fabioaap/projects/2  
 **📊 Issues do Repositório:** https://github.com/fabioaap/FinanceAI/issues
 
+**Resumo rápido:**
+- Dexie já é a fonte única para transações; bills/goals/idioma estão em adapters locais enquanto finalizamos Issue #53.
+- Spark Framework foi removido do app e do build; PR #53 cobre a limpeza final e testes.
+
 ---
 
-## ✅ Issues Concluídas (8/10)
+## ✅ Issues Concluídas (8/11)
 
 ### Issue #33: Integrar ImportBankFileModal no App ✅
 **Status:** ✅ CONCLUÍDO  
@@ -164,22 +168,37 @@
 **Implementação:**
 - ✅ BankFileUpload atualizado para aceitar múltiplos arquivos
 - ✅ Interface `FileWithResult` para rastrear status individual
-- ✅ Progress bar individual por arquivo
-- ✅ Progress bar geral do lote (overallProgress)
-- ✅ Processing paralelo com Promise.all
-- ✅ Tratamento de erros por arquivo
-- ✅ UI com lista de arquivos, status icons e badges
-- ✅ Suporte a drag-and-drop de múltiplos arquivos
-- ✅ Botão para remover arquivos pendentes
-- ✅ Summary com contadores de sucesso/erro/pendente
-- ✅ Prop `allowMultiple` para habilitar/desabilitar feature
+- ✅ Progress bar individual + geral
+- ✅ Processamento paralelo com tratamento de erros por arquivo
+- ✅ UI completa com badges, drag-and-drop e resumo final
 
 **Arquivos modificados:**
 - `src/components/BankFileUpload.tsx`
 
 ---
 
-## 🔄 Issues em Progresso (0/2 atualmente)
+## 🔄 Issues em Progresso (1/11)
+
+### Issue #53: Remover Spark Framework e migrar estado para Dexie/localStorage
+**Status:** 🔄 EM ANDAMENTO  
+**GitHub / PR:** https://github.com/fabioaap/FinanceAI/pull/53  
+**Branch:** `copilot/create-data-abstraction-layer`  
+**Resumo:**
+- ✅ Spark removido de `App.tsx`, `vite.config.ts` e `package.json`
+- ✅ `useAppTransactions`, `useBillsAdapter`, `useGoalsAdapter` e persistência de idioma via localStorage implementados
+- ✅ Transactions já persistem em Dexie; bills/goals continuam temporariamente em localStorage (adapters)
+- ✅ App roda sem erros 401 e sem dependências do Spark
+- ⏳ Pendente: mover bills/goals/settings para tabelas Dexie definitivas, adicionar testes dos novos hooks e atualizar documentação final
+
+**Checklist restante:**
+- [ ] Criar tabelas Dexie `bills`, `goals`, `settings`
+- [ ] Implementar hooks definitivos (`useBills`, `useGoals`, `useAppLanguage`)
+- [ ] Atualizar App para usar os novos hooks Dexie
+- [ ] Consolidar documentação (Breaking Changes + Migration Guide)
+
+---
+
+## 💤 Issues Pendentes (2/11)
 
 ### Issue #40: Otimizar parser para arquivos grandes (>10k linhas)
 **Status:** ⏳ PENDENTE / FUTURO  
@@ -189,10 +208,8 @@
 
 **Tarefas:**
 - [ ] Implementar Web Worker para parsing em background
-- [ ] Implementar stream parsing (processar em chunks)
-- [ ] Criar benchmark de performance
-- [ ] Adicionar testes de desempenho
-- [ ] UI com feedback de progresso para arquivos grandes
+- [ ] Parsing em streaming/chunks
+- [ ] Benchmark de performance + alertas de progresso na UI
 
 ---
 
@@ -203,65 +220,52 @@
 **Estimativa:** TBD (depende de infra)  
 
 **Tarefas:**
-- [ ] Planejar arquitetura de sincronização
-- [ ] Implementar conflict resolution
-- [ ] Integração com backend (se existir)
-- [ ] Criptografia de dados (WebCrypto)
-- [ ] Rollback e recuperação de erros
-- [ ] Documentação de estratégia de sync
+- [ ] Desenhar arquitetura de sincronização + conflict resolution
+- [ ] Integrar com backend/infra (quando disponível)
+- [ ] Criptografia (WebCrypto) + rollback/observabilidade
 
 ---
 
 ## 📈 Métricas
 
-**Issues concluídas:** 8/10 (80%) ✅  
-**Issues em progresso:** 0/10 (0%)  
-**Issues pendentes:** 2/10 (20%)  
+- **Issues concluídas:** 8/11 (73%) ✅
+- **Issues em progresso:** 1/11 (9%)
+- **Issues pendentes:** 2/11 (18%)
 
-**Tempo estimado restante:**  
-- Média prioridade: ~8-9h (Issues #38, #39)
-- Baixa prioridade/Futuro: ~3-5 dias (Issues #40, #41)
-
-**Total estimado:** ~10-15 horas + 3-5 dias para otimizações futuras
+**Tempo estimado restante:**
+- Alta prioridade (Issue #53): ~1-2 dias de engenharia + testes
+- Futuro (#40, #41): ~3-5 dias adicionais após discovery
 
 ---
 
 ## 🎯 Próximos Passos Recomendados
 
-1. ~~**Imediato:** Integrar UI de duplicatas no ImportBankFileModal (Issue #36)~~ ✅ Concluído
-2. ~~**Alta prioridade:** Implementar testes E2E com Playwright (Issue #35)~~ ✅ Concluído
-3. ~~**Média prioridade:** Adicionar suporte QIF (Issue #37)~~ ✅ Concluído
-4. **Média prioridade:** Implementar mapeamento de categorias (Issue #38)
-5. **Média prioridade:** Upload múltiplo de arquivos (Issue #39)
-6. **Futuro:** Otimizar para arquivos grandes (Issue #40)
-7. **Futuro:** Sync Engine (Issue #41)
+1. Finalizar Issue #53 consolidando Dexie para bills/goals/settings e adicionando testes/unit + docs.
+2. Criar script de migração (localStorage → Dexie) para garantir zero perda de dados quando adapters forem removidos.
+3. Planejar discovery técnico para Issue #40 (Web Worker + streaming) e Issue #41 (sync engine) antes de iniciar implementação.
 
 ---
 
 ## 🐛 Problemas Conhecidos
 
-~~1. **Testes unitários:** 8 de 28 testes falhando~~ ✅ Resolvido - 100% dos testes passando
-
-~~2. **CI Pipeline:** Codecov requer secret `CODECOV_TOKEN`~~ ⚠️ Configuração opcional
-
-3. **Dependências:** `@financeai/infra-db` referenciado mas não existe no workspace (fallback para useKV funciona)
-
-4. **Token GitHub:** Token fornecido não tem permissão para fechar issues (requer scope `repo` com write)
+1. Bills e goals ainda dependem de localStorage (adapters). Precisam migrar para Dexie para manter consistência e apoiar sync futuro.
+2. Não existe script automático para migrar dados antigos do Spark/useKV; usuários precisam reimportar manualmente até Issue #53 ser concluída.
+3. Codecov ainda depende do secret `CODECOV_TOKEN` para reportar cobertura no CI.
 
 ---
 
 ## 📝 Notas Técnicas
 
-- **Persistência:** Atualmente usa `useKV` com fallback para Dexie (importado de `@financeai/infra-db`)
-- **Testes:** Vitest + happy-dom (browser env simulation) + Playwright (E2E)
-- **CI:** GitHub Actions, Node 20, ubuntu-latest
-- **Cobertura de testes:** Target 80% (atual: ~85% unit tests + E2E coverage)
-- **Formatos suportados:** CSV, OFX, TXT, QIF
+- **Persistência atual:** Dexie para transações, categorias, budgets e contas; localStorage (adapters) para bills/goals/idioma.
+- **Hooks principais:** `useAppTransactions`, `useBillsAdapter`, `useGoalsAdapter`; aguardando versões definitivas Dexie.
+- **Testes:** Vitest (unit), Playwright (E2E) e fake-indexeddb configurado em `test/setup.ts`.
+- **CI:** GitHub Actions (`.github/workflows/ci.yml`) roda lint + build + testes + cobertura.
+- **Formatos suportados:** CSV, OFX, TXT, QIF; múltiplos arquivos e regras personalizadas de categoria já disponíveis.
 
 ---
 
-**Última atualização:** 19/11/2025  
+**Última atualização:** 22/11/2025  
 **Responsável:** @fabioaap  
 **Projeto:** FinanceAI - Upload de Arquivos Bancários
 
-**🎉 80% do backlog concluído! 8 de 10 issues implementadas e testadas.**
+**🎯 Foco atual: concluir Issue #53 para liberar Dexie completo e preparar terreno para otimizações (Issue #40) e sync (Issue #41).**
