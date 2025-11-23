@@ -6,5 +6,3 @@ export * from './useAppTransactions';
 export * from './useBills';
 export * from './useGoals';
 export * from './useAppLanguage';
-export * from './useBillsAdapter';
-export * from './useGoalsAdapter';
