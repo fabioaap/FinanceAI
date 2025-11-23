@@ -1,14 +1,15 @@
 # 🚀 Status de Implementação - Backlog FinanceAI
 
 **Data de atualização:** 22 de novembro de 2025  
-**Progresso geral:** 73% concluído (8/11 issues)
+**Progresso geral:** 73% concluído (8/11 issues) | **Issue #53:** Plano estruturado em execução 🚀
 
 **🔗 GitHub Project:** https://github.com/users/fabioaap/projects/2  
 **📊 Issues do Repositório:** https://github.com/fabioaap/FinanceAI/issues
 
 **Resumo rápido:**
-- Dexie já é a fonte única para transações; bills/goals/idioma estão em adapters locais enquanto finalizamos Issue #53.
-- Spark Framework foi removido do app e do build; PR #53 cobre a limpeza final e testes.
+- ✅ Spark completamente removido do build (vite.config.ts, package.json)
+- ✅ Transações em Dexie; bills/goals/idioma em adapters localStorage (temporário)
+- 🚀 **Issue #53** segue plano estruturado: Dexie completo + hooks definitivos + script migração + testes + docs (1-2 dias)
 
 ---
 
@@ -179,22 +180,33 @@
 
 ## 🔄 Issues em Progresso (1/11)
 
-### Issue #53: Remover Spark Framework e migrar estado para Dexie/localStorage
-**Status:** 🔄 EM ANDAMENTO  
+### Issue #53: Remover Spark Framework e consolidar Dexie 100%
+**Status:** 🔄 EM ANDAMENTO (Plano estruturado em execução)  
 **GitHub / PR:** https://github.com/fabioaap/FinanceAI/pull/53  
-**Branch:** `copilot/create-data-abstraction-layer`  
-**Resumo:**
-- ✅ Spark removido de `App.tsx`, `vite.config.ts` e `package.json`
-- ✅ `useAppTransactions`, `useBillsAdapter`, `useGoalsAdapter` e persistência de idioma via localStorage implementados
-- ✅ Transactions já persistem em Dexie; bills/goals continuam temporariamente em localStorage (adapters)
-- ✅ App roda sem erros 401 e sem dependências do Spark
-- ⏳ Pendente: mover bills/goals/settings para tabelas Dexie definitivas, adicionar testes dos novos hooks e atualizar documentação final
+**Branch:** `copilot/remove-spark-and-migrate-to-dexie`  
 
-**Checklist restante:**
-- [ ] Criar tabelas Dexie `bills`, `goals`, `settings`
-- [ ] Implementar hooks definitivos (`useBills`, `useGoals`, `useAppLanguage`)
-- [ ] Atualizar App para usar os novos hooks Dexie
-- [ ] Consolidar documentação (Breaking Changes + Migration Guide)
+**✅ Concluído:**
+- Spark removido de vite.config.ts e package.json (build limpo)
+- useAppTransactions (Dexie) funcionando para transações
+- useBillsAdapter/useGoalsAdapter temporários com localStorage
+- App roda sem erros 401 ou dependências do Spark
+
+**🚀 Plano estruturado (1-2 dias):**
+1. Expandir schema Dexie (`bills`, `goals`, `settings` tables + índices)
+2. Criar hooks definitivos (`useBills`, `useGoals`, `useAppLanguage` com CRUD + error handling)
+3. Atualizar `App.tsx` (remover adapters, integrar novos hooks Dexie)
+4. Script migração automática (localStorage→Dexie, flag idempotente)
+5. Testes completos (Vitest + E2E Playwright, IndexedDB verification)
+6. Documentação (MIGRATION_SPARK_TO_DEXIE.md, BREAKING_CHANGES.md)
+
+**Checklist progresso:**
+- [ ] Schema Dexie expandido (bills, goals, settings)
+- [ ] Hooks definitivos + testes unitários
+- [ ] App.tsx refatorizado (remover adapters)
+- [ ] Script migração integrado com useEffect
+- [ ] Todos testes green (lint, build, test, test:e2e)
+- [ ] Documentação consolidada
+- [ ] PR #53 pronta para merge
 
 ---
 
@@ -238,19 +250,35 @@
 
 ---
 
-## 🎯 Próximos Passos Recomendados
+## 🎯 Próximos Passos
 
-1. Finalizar Issue #53 consolidando Dexie para bills/goals/settings e adicionando testes/unit + docs.
-2. Criar script de migração (localStorage → Dexie) para garantir zero perda de dados quando adapters forem removidos.
-3. Planejar discovery técnico para Issue #40 (Web Worker + streaming) e Issue #41 (sync engine) antes de iniciar implementação.
+**Imediato (Hoje/próx 1-2 dias):**
+1. Executar plano Issue #53 (Dexie completo + hooks + script migração + testes + docs)
+2. Merge PR #53 quando completo
+
+**Curto prazo (próxima semana):**
+3. Discovery Issue #40 (Web Worker + streaming para parser grande)
+4. Planejamento Issue #41 (arquitetura sync engine)
+
+**Médio prazo (2-4 semanas):**
+5. Implementar Issue #40 (otimização parser)
+6. MVP Issue #41 (sincronização com nuvem)
 
 ---
 
-## 🐛 Problemas Conhecidos
+## 🐛 Problemas Conhecidos & Status
 
-1. Bills e goals ainda dependem de localStorage (adapters). Precisam migrar para Dexie para manter consistência e apoiar sync futuro.
-2. Não existe script automático para migrar dados antigos do Spark/useKV; usuários precisam reimportar manualmente até Issue #53 ser concluída.
-3. Codecov ainda depende do secret `CODECOV_TOKEN` para reportar cobertura no CI.
+1. **Bills/goals em localStorage (adapters)**
+   - Status: Será resolvido em Issue #53 (tabelas Dexie + hooks)
+   - Timeline: 1-2 dias
+
+2. **Falta migração automática Spark→Dexie**
+   - Status: Script será implementado na Issue #53
+   - Timeline: 1-2 dias
+
+3. **Codecov requer CODECOV_TOKEN**
+   - Status: ⚠️ Opcional (CI funciona sem)
+   - Ação: Adicionar secret se cobertura for prioridade
 
 ---
 
@@ -264,8 +292,9 @@
 
 ---
 
-**Última atualização:** 22/11/2025  
+**Última atualização:** 22/11/2025 (com plano estruturado)  
 **Responsável:** @fabioaap  
 **Projeto:** FinanceAI - Upload de Arquivos Bancários
 
-**🎯 Foco atual: concluir Issue #53 para liberar Dexie completo e preparar terreno para otimizações (Issue #40) e sync (Issue #41).**
+**🚀 Foco:** Executar Issue #53 conforme plano (Dexie completo) para liberar terreno para #40 (performance) e #41 (sync)  
+**Próxima revisão:** 24/11/2025 (checkpoint de progresso)
